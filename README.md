@@ -6,19 +6,19 @@ To install twarc and this plugin:
 
 ```
 pip install twarc
-pip install twarc-csv #todo
+pip install twarc-csv
 ```
 
 A new command will be available in twarc. First, flatten the data with:
 
 ```
-twarc flatten input.json one_json_per_line.jsonl
+twarc2 flatten input.json one_json_per_line.jsonl
 ```
 
 Now you can conver to CSV
 
 ```
-twarc csv one_json_per_line.jsonl output.csv
+twarc2 csv one_json_per_line.jsonl output.csv
 ```
 
 Currently, this expects 1 tweet json per line, that comes from the flatten command. In a later version it will auto detect what format of json you're giving it, and act appropriately.
