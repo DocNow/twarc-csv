@@ -1,18 +1,18 @@
 # twarc-csv
 
-This module adds CSV Export for Tweets to `twarc`. Work in progress.
+This module adds CSV Export for Tweets to `twarc`.
 
-To install `twarc2` and this plugin:
+First install this plugin:
 
 ```
-pip install --upgrade https://github.com/DocNow/twarc/archive/v2.zip
 pip install twarc-csv
 ```
 
-A new command will be available in twarc. If you have collected some tweets in
-a file `tweets.jsonl` you can now convert them to CSV
+A new `csv` command will be available in twarc. If you have collected some
+tweets in a file `tweets.jsonl` you can now convert them to CSV
 
 ```
+twarc2 search blacklivesmatter tweets.jsonl
 twarc2 csv tweets.jsonl tweets.csv
 ```
 
