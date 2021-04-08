@@ -1,7 +1,9 @@
 import json
 import click
 import pandas as pd
+
 from itertools import chain
+from twarc.expansions import flatten
 
 
 def _inline_referenced_tweets(tweet):
@@ -23,9 +25,28 @@ def _inline_referenced_tweets(tweet):
 @click.argument("outfile", type=click.File("w"), default="-")
 def csv(infile, outfile):
     """
-    Convert tweets to CSV
+    Convert tweets to CSV.
     """
-    json_lines = (json.loads(line) for line in infile if line.strip() is not "")
+
+    json_lines = []
+    for line in infile:
+
+        # get a line, and ignore empty lines
+        line = line.strip()
+        if line == "":
+            continue
+        obj = json.loads(line)
+
+        # if it has a "data" key ensure data it is flattened
+        if "data" in obj:
+            # flatten a list of tweets
+            if isinstance(obj["data"], list):
+                json_lines.extend(flatten(obj)['data'])
+            # flatten a single tweet
+            else:
+                json_lines.append(flatten(obj)['data'])
+        else:
+            json_lines.append(obj)
 
     # todo: (Optional) append referenced tweets as new rows
     json_lines = chain.from_iterable(
