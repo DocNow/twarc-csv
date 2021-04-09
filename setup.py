@@ -14,7 +14,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.3",
-    install_requires=["twarc>=2.0.4", "pandas"],
+    install_requires=["twarc>=2.0.4", "pandas>=1.2.3"],
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
     entry_points="""
