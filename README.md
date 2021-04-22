@@ -5,14 +5,14 @@ This module adds CSV Export for Tweets to `twarc`.
 Make sure twarc is installed and configured:
 
 ```
-pip install twarc
+pip install --upgrade twarc
 twarc2 configure
 ```
 
 Install this plugin:
 
 ```
-pip install twarc-csv
+pip install --upgrade twarc-csv
 ```
 
 A new `csv` command will be available in twarc. If you have collected some
@@ -25,10 +25,9 @@ twarc2 csv tweets.jsonl tweets.csv # convert to CSV
 
 ## Issues with Twitter Data in CSV
 
-CSV isn't the best choice for storing twitter data. Always keep the
-original API responses, and perform feature extraction on json objects.
+CSV isn't the best choice for storing twitter data. Always keep the original API responses, and perform feature extraction on json objects.
 
-This export script is intended for convenience, for importing samples of data into other tools. The work in progress script does not expose any customizations or configuration yet, there are many ways to format a CSV of tweets, and this is just one way. 
+This export script is intended for convenience, for importing samples of data into other tools, there are many ways to format a CSV of tweets, and this is just one way.
 
 ## Contributing
 
