@@ -25,17 +25,60 @@ twarc2 csv tweets.jsonl tweets.csv # convert to CSV
 
 ## Extra Command Line Options
 
-`--json-encode-text` / `--no-json-encode-text` Apply json escaping to text fields. Off by default but may break the CSV due to newlines and emoji.
+Run
 
-`--json-encode-all` / `--no-json-encode-all` Apply json escaping to all data fields. Off by default.
+```
+twarc2 csv --help
+```
 
-`--json-encode-lists` / `--no-json-encode-lists` Apply json escaping to lists. On by Default.
+For a list of options.
 
-`--inline-referenced-tweets` / `--no-inline-referenced-tweets` Include referenced tweets as "rows" as opposed to being "inside" other tweets. On by default.
+```
+Options:
+  --json-encode-all / --no-json-encode-all
+                                  JSON encode / escape all fields. Default: no
+  --json-encode-lists / --no-json-encode-lists
+                                  JSON encode / escape lists. Default: yes
+  --json-encode-text / --no-json-encode-text
+                                  JSON encode / escape text fields. Default: no
 
-`--allow-duplicates` / `--no-allow-duplicates` Output all tweets, without filtering duplicates. Off by default.
+  --inline-referenced-tweets / --no-inline-referenced-tweets
+                                  Output referenced tweets inline as separate
+                                  rows. Default: yes
 
-`--batch-size` How many tweets to process per "chunk" for large files. Default is 5000.
+  --inline-pinned-tweets / --no-pinned-tweets
+                                  If converting a user dataset, output pinned
+                                  tweets inline as separate rows. Default: no
+
+  --allow-duplicates / --no-allow-duplicates
+                                  Remove duplicate tweets by ID. Default: yes
+  --input-tweet-columns / --no-input-tweet-columns
+                                  Use a default list of tweet column names in
+                                  the input. Only modify this if you have
+                                  processed the json yourself. Default: yes
+
+  --input-users-columns / --no-input-users-columns
+                                  Use a default list of user column names in
+                                  the input. Only modify this if you have a
+                                  dataset of users as opposed to tweets.
+                                  Default: no
+
+  --input-columns TEXT            Manually specify input columns. Comma
+                                  separated string. Default is blank, no extra
+                                  input columns
+
+  --output-columns TEXT           Specify what columns to output in the CSV.
+                                  Default is all input columns.
+
+  --batch-size INTEGER            How many lines to process per chunk. Default
+                                  is 5000
+
+  --show-stats / --no-show-stats  Show stats about the dataset on completion.
+                                  Default is show. Always hidden if you're
+                                  using stdin / stdout pipes.
+
+  --help                          Show this message and exit.
+```
 
 ## Issues with Twitter Data in CSV
 
