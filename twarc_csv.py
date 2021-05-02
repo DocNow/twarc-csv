@@ -196,7 +196,7 @@ class CSVConverter:
         line = self.infile.readline()
         while line:
             self.counts["lines"] = self.counts["lines"] + 1
-            if line.strip() is not "":
+            if line.strip() != "":
                 try:
                     o = json.loads(line)
                     yield o
