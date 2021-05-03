@@ -20,7 +20,7 @@ tweets in a file `tweets.jsonl` you can now convert them to CSV
 
 ```
 twarc2 search --limit 500 "blacklivesmatter" tweets.jsonl # collect some tweets
-twarc2 csv tweets.jsonl tweets.csv # convert to CSV
+twarc2 csv tweets.jsonl > tweets.csv # convert to CSV
 ```
 
 ## Extra Command Line Options
@@ -82,7 +82,7 @@ Options:
 
 ## Issues with Twitter Data in CSV
 
-CSV isn't the best choice for storing twitter data. Always keep the original API responses, and perform feature extraction on json objects.
+CSV isn't the best choice for storing twitter data. Always keep the original API responses, and perform feature extraction on JSON objects.
 
 This export script is intended for convenience, for importing samples of data into other tools, there are many ways to format a CSV of tweets, and this is just one way.
 
