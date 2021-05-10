@@ -420,7 +420,7 @@ class CSVConverter:
 @click.option(
     "--extra-input-columns",
     default="",
-    help="Manually specify input columns. Comma separated string. Default is blank, no extra input columns",
+    help="Manually specify extra input columns. Comma separated string. Default is blank, no extra input columns.",
 )
 @click.option(
     "--output-columns",
@@ -431,7 +431,7 @@ class CSVConverter:
     "--batch-size",
     type=int,
     default=1000,
-    help="How many lines to process per chunk. Default is 1000",
+    help="How many lines to process per chunk. Default is 1000. Reduce this if output is slow.",
 )
 @click.option(
     "--show-stats/--no-show-stats",

@@ -61,13 +61,13 @@ Options:
 
   --extra-input-columns TEXT      Manually specify extra input columns. Comma
                                   separated string. Default is blank, no extra
-                                  input columns
+                                  input columns.
 
   --output-columns TEXT           Specify what columns to output in the CSV.
                                   Default is all input columns.
 
   --batch-size INTEGER            How many lines to process per chunk. Default
-                                  is 1000
+                                  is 1000. Reduce this if output is slow.
 
   --show-stats / --no-show-stats  Show stats about the dataset on completion.
                                   Default is show. Always hidden if you're
