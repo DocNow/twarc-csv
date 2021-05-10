@@ -430,8 +430,8 @@ class CSVConverter:
 @click.option(
     "--batch-size",
     type=int,
-    default=1000,
-    help="How many lines to process per chunk. Default is 1000. Reduce this if output is slow.",
+    default=100,
+    help="How many lines to process per chunk. Default is 100. Reduce this if output is slow.",
 )
 @click.option(
     "--show-stats/--no-show-stats",
