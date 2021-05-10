@@ -144,7 +144,7 @@ class CSVConverter:
         allow_duplicates=False,
         input_tweet_columns=True,
         input_users_columns=False,
-        input_columns="",
+        extra_input_columns="",
         output_columns="",
         batch_size=5000,
     ):
@@ -171,8 +171,8 @@ class CSVConverter:
             self.columns.extend(DEFAULT_TWEET_COLUMNS)
         if input_users_columns:
             self.columns.extend(DEFAULT_USERS_COLUMNS)
-        if input_columns:
-            self.columns.extend(manual_columns.split(","))
+        if extra_input_columns:
+            self.columns.extend(extra_input_columns.split(","))
 
         self.output_columns = (
             output_columns.split(",") if output_columns else self.columns
@@ -329,15 +329,17 @@ class CSVConverter:
         _df = pd.json_normalize([tweet for tweet in tweet_batch], errors="ignore")
 
         # Check for mismatched columns
-        if len(_df.columns) > len(self.columns):
-            diff = set(_df.columns) - set(self.columns)
+        diff = set(_df.columns) - set(self.columns)
+        if len(diff) > 0:
             click.echo(
                 click.style(
-                    f"💔 ERROR: Unexpected Data: \n\"{','.join(diff)}\"\n to fix, add these with --input-columns. Skipping entire batch of {len(_df)} tweets!",
+                    f"💔 ERROR: Unexpected Data: \n\"{','.join(diff)}\"\n to fix, add these with --extra-input-columns. Skipping entire batch of {len(_df)} tweets!",
                     fg="red",
                 ),
                 err=True,
             )
+            log.error(f"CSV Unexpected Data: \"{','.join(diff)}\". Expected {len(self.columns)} columns, got {len(_df.columns)}. Skipping entire batch of {len(_df)} tweets!")
+            self.counts["parse_errors"] = self.counts["parse_errors"] + len(_df)
             return pd.DataFrame(columns=self.columns)
 
         _df = _df.reindex(columns=self.columns)
@@ -426,7 +428,7 @@ class CSVConverter:
     help="Use a default list of user column names in the input. Only modify this if you have a dataset of users as opposed to tweets. Default: no",
 )
 @click.option(
-    "--input-columns",
+    "--extra-input-columns",
     default="",
     help="Manually specify input columns. Comma separated string. Default is blank, no extra input columns",
 )
@@ -457,7 +459,7 @@ def csv(
     allow_duplicates,
     input_tweet_columns,
     input_users_columns,
-    input_columns,
+    extra_input_columns,
     output_columns,
     batch_size,
     show_stats,
@@ -487,7 +489,7 @@ def csv(
         allow_duplicates,
         input_tweet_columns,
         input_users_columns,
-        input_columns,
+        extra_input_columns,
         output_columns,
         batch_size,
     )
