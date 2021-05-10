@@ -97,6 +97,7 @@ reply_settings
 source
 text
 type
+withheld.scope
 withheld.copyright
 withheld.country_codes""".split(
     "\n"
@@ -440,8 +441,8 @@ class CSVConverter:
 @click.option(
     "--batch-size",
     type=int,
-    default=5000,
-    help="How many lines to process per chunk. Default is 5000",
+    default=1000,
+    help="How many lines to process per chunk. Default is 1000",
 )
 @click.option(
     "--show-stats/--no-show-stats",
@@ -510,6 +511,6 @@ def csv(
             + f"Read {converter.counts['tweets']} tweets from {converter.counts['lines']} lines. \n"
             + f"{converter.counts['referenced_tweets']} were referenced tweets, {converter.counts['duplicates']} were duplicates.\n"
             + errors
-            + f"Wrote {converter.counts['rows']} rows and wrote {converter.counts['output_columns']} of {converter.counts['input_columns']} input columns in the CSV.\n",
+            + f"Wrote {converter.counts['rows']} rows and output {converter.counts['output_columns']} of {converter.counts['input_columns']} input columns in the CSV.\n",
             err=True,
         )

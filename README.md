@@ -71,7 +71,7 @@ Options:
                                   Default is all input columns.
 
   --batch-size INTEGER            How many lines to process per chunk. Default
-                                  is 5000
+                                  is 1000
 
   --show-stats / --no-show-stats  Show stats about the dataset on completion.
                                   Default is show. Always hidden if you're
