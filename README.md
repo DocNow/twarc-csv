@@ -63,7 +63,7 @@ Options:
                                   dataset of users as opposed to tweets.
                                   Default: no
 
-  --input-columns TEXT            Manually specify input columns. Comma
+  --extra-input-columns TEXT      Manually specify extra input columns. Comma
                                   separated string. Default is blank, no extra
                                   input columns
 
