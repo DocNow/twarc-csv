@@ -146,7 +146,7 @@ class CSVConverter:
         input_users_columns=False,
         extra_input_columns="",
         output_columns="",
-        batch_size=5000,
+        batch_size=100,
     ):
         self.infile = infile
         self.outfile = outfile
@@ -242,9 +242,8 @@ class CSVConverter:
             ]
 
         # Deal with pinned tweets for user datasets, `tweet` here is actually a user:
-        if "pinned_tweet" in tweet:
-            # remove the tweet from a user dataset, pinned_tweet_id remains:
-            tweet.pop("pinned_tweet")
+        # remove the tweet from a user dataset, pinned_tweet_id remains:
+        tweet.pop("pinned_tweet", None)
 
         yield tweet
 
