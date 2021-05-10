@@ -5,14 +5,14 @@ This module adds CSV Export for Tweets to `twarc`.
 Make sure twarc is installed and configured:
 
 ```
-pip install --upgrade twarc
+pip3 install --upgrade twarc
 twarc2 configure
 ```
 
 Install this plugin:
 
 ```
-pip install --upgrade twarc-csv
+pip3 install --upgrade twarc-csv
 ```
 
 A new `csv` command will be available in twarc. If you have collected some
