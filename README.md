@@ -46,10 +46,6 @@ Options:
                                   Output referenced tweets inline as separate
                                   rows. Default: yes
 
-  --inline-pinned-tweets / --no-pinned-tweets
-                                  If converting a user dataset, output pinned
-                                  tweets inline as separate rows. Default: no
-
   --allow-duplicates / --no-allow-duplicates
                                   Remove duplicate tweets by ID. Default: yes
   --input-tweet-columns / --no-input-tweet-columns

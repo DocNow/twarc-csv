@@ -141,7 +141,6 @@ class CSVConverter:
         json_encode_lists=True,
         json_encode_text=False,
         inline_referenced_tweets=True,
-        inline_pinned_tweets=False,
         allow_duplicates=False,
         input_tweet_columns=True,
         input_users_columns=False,
@@ -155,7 +154,6 @@ class CSVConverter:
         self.json_encode_lists = json_encode_lists
         self.json_encode_text = json_encode_text
         self.inline_referenced_tweets = inline_referenced_tweets
-        self.inline_pinned_tweets = inline_pinned_tweets
         self.allow_duplicates = allow_duplicates
         self.batch_size = batch_size
         self.dataset_ids = set()
@@ -243,16 +241,10 @@ class CSVConverter:
                 {"type": r["type"], "id": r["id"]} for r in tweet["referenced_tweets"]
             ]
 
-        # Deal with pinned tweets for user datasets:
-        # Todo: This is not fully implemented!
-        if self.inline_pinned_tweets:
-            if "pinned_tweet" in tweet:
-                # extract the referenced tweet as a new row
-                tweet["pinned_tweet"]["type"] = "pinned_tweet"
-                self.counts["referenced_tweets"] = self.counts["referenced_tweets"] + 1
-                yield referenced_tweet
-                # pinned_tweet_id remains:
-                tweet.pop("pinned_tweet")
+        # Deal with pinned tweets for user datasets, `tweet` here is actually a user:
+        if "pinned_tweet" in tweet:
+            # remove the tweet from a user dataset, pinned_tweet_id remains:
+            tweet.pop("pinned_tweet")
 
         yield tweet
 
@@ -339,7 +331,9 @@ class CSVConverter:
                 ),
                 err=True,
             )
-            log.error(f"CSV Unexpected Data: \"{','.join(diff)}\". Expected {len(self.columns)} columns, got {len(_df.columns)}. Skipping entire batch of {len(_df)} tweets!")
+            log.error(
+                f"CSV Unexpected Data: \"{','.join(diff)}\". Expected {len(self.columns)} columns, got {len(_df.columns)}. Skipping entire batch of {len(_df)} tweets!"
+            )
             self.counts["parse_errors"] = self.counts["parse_errors"] + len(_df)
             return pd.DataFrame(columns=self.columns)
 
@@ -409,11 +403,6 @@ class CSVConverter:
     help="Output referenced tweets inline as separate rows. Default: yes",
 )
 @click.option(
-    "--inline-pinned-tweets/--no-pinned-tweets",
-    default=False,
-    help="If converting a user dataset, output pinned tweets inline as separate rows. Default: no",
-)
-@click.option(
     "--allow-duplicates/--no-allow-duplicates",
     default=False,
     help="Remove duplicate tweets by ID. Default: yes",
@@ -456,7 +445,6 @@ def csv(
     json_encode_lists,
     json_encode_text,
     inline_referenced_tweets,
-    inline_pinned_tweets,
     allow_duplicates,
     input_tweet_columns,
     input_users_columns,
@@ -486,7 +474,6 @@ def csv(
         json_encode_lists,
         json_encode_text,
         inline_referenced_tweets,
-        inline_pinned_tweets,
         allow_duplicates,
         input_tweet_columns,
         input_users_columns,
