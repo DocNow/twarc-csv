@@ -318,7 +318,7 @@ class CSVConverter:
             for tweet in self._handle_formats(batch)
         )
 
-        _df = pd.json_normalize([tweet for tweet in tweet_batch], errors="ignore")
+        _df = pd.json_normalize(tweet_batch, errors="ignore")
 
         # Check for mismatched columns
         diff = set(_df.columns) - set(self.columns)
@@ -336,10 +336,7 @@ class CSVConverter:
             self.counts["parse_errors"] = self.counts["parse_errors"] + len(_df)
             return pd.DataFrame(columns=self.columns)
 
-        _df = _df.reindex(columns=self.columns)
-        _df = self._process_dataframe(_df)
-
-        return _df
+        return self._process_dataframe(_df.reindex(columns=self.columns))
 
     def _write_output(self, _df, first_batch):
         """
