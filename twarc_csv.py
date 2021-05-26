@@ -376,8 +376,8 @@ class CSVConverter:
 
 
 @click.command()
-@click.argument("infile", type=click.File("r"), default="-")
-@click.argument("outfile", type=click.File("w"), default="-")
+@click.argument("infile", type=click.File("r", encoding="utf8"), default="-")
+@click.argument("outfile", type=click.File("w", encoding="utf8"), default="-")
 @click.option(
     "--json-encode-all/--no-json-encode-all",
     default=False,
