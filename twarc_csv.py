@@ -7,7 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 from collections import OrderedDict
 from more_itertools import ichunked
-from twarc.expansions import flatten
+from twarc import ensure_flattened
 
 log = logging.getLogger("twarc")
 
@@ -206,26 +206,13 @@ class CSVConverter:
                 self.progress.update(self.infile.tell() - self.progress.n)
             line = self.infile.readline()
 
-    def _handle_formats(self, batch):
+    def _generate_tweets(self, batch):
         """
-        Handle different types of json formats, generating 1 tweet at a time
-
-        a batch is a number of lines from a json,
-        these can be full pages of requests or individual tweets.
+        Generate flattened tweets from a batch.
         """
         for item in batch:
-            # if it has a "data" key ensure data it is flattened
-            if "data" in item:
-                # flatten a list of tweets
-                if isinstance(item["data"], list):
-                    for i in flatten(item)["data"]:
-                        yield i
-                # flatten a single tweet, eg, from stream
-                else:
-                    yield flatten(item)["data"]
-            else:
-                # this assumes the data is flattened
-                yield item
+            for tweet in ensure_flattened(item):
+                yield tweet
 
     def _inline_referenced_tweets(self, tweet):
         """
@@ -315,7 +302,7 @@ class CSVConverter:
         # (Optional) append referenced tweets as new rows
         tweet_batch = itertools.chain.from_iterable(
             self._process_tweets(self._inline_referenced_tweets(tweet))
-            for tweet in self._handle_formats(batch)
+            for tweet in self._generate_tweets(batch)
         )
 
         _df = pd.json_normalize(list(tweet_batch), errors="ignore")
