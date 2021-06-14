@@ -42,6 +42,7 @@ author.public_metrics.tweet_count
 author.url
 author.username
 author.verified
+author.witheld.scope
 author.withheld.country_codes
 author_id
 context_annotations
