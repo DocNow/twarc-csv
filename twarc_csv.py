@@ -42,6 +42,8 @@ author.public_metrics.tweet_count
 author.url
 author.username
 author.verified
+author.withheld.scope
+author.withheld.copyright
 author.withheld.country_codes
 author_id
 context_annotations
@@ -127,6 +129,8 @@ public_metrics.tweet_count
 url
 username
 verified
+withheld.scope
+withheld.copyright
 withheld.country_codes""".split(
     "\n"
 )
