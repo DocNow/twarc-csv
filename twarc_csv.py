@@ -171,11 +171,11 @@ class CSVConverter:
         )
         self.columns = list()
         if input_tweet_columns:
-            self.columns.extend(DEFAULT_TWEET_COLUMNS)
+            self.columns.extend(x for x in DEFAULT_TWEET_COLUMNS if x not in self.columns)
         if input_users_columns:
-            self.columns.extend(DEFAULT_USERS_COLUMNS)
+            self.columns.extend(x for x in DEFAULT_USERS_COLUMNS if x not in self.columns)
         if extra_input_columns:
-            self.columns.extend(extra_input_columns.split(","))
+            self.columns.extend(x for x in extra_input_columns.split(",") if x not in self.columns)
 
         self.output_columns = (
             output_columns.split(",") if output_columns else self.columns
