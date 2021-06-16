@@ -11,9 +11,9 @@ from twarc import ensure_flattened
 
 log = logging.getLogger("twarc")
 
-DEFAULT_TWEET_COLUMNS = """__twarc.retrieved_at
-__twarc.url
-__twarc.version
+DEFAULT_TWEET_COLUMNS = """id
+created_at
+text
 attachments.media
 attachments.media_keys
 attachments.poll.duration_minutes
@@ -22,16 +22,17 @@ attachments.poll.id
 attachments.poll.options
 attachments.poll.voting_status
 attachments.poll_ids
+author.id
 author.created_at
+author.username
+author.name
 author.description
 author.entities.description.cashtags
 author.entities.description.hashtags
 author.entities.description.mentions
 author.entities.description.urls
 author.entities.url.urls
-author.id
 author.location
-author.name
 author.pinned_tweet_id
 author.profile_image_url
 author.protected
@@ -40,7 +41,6 @@ author.public_metrics.following_count
 author.public_metrics.listed_count
 author.public_metrics.tweet_count
 author.url
-author.username
 author.verified
 author.withheld.scope
 author.withheld.copyright
@@ -48,7 +48,6 @@ author.withheld.country_codes
 author_id
 context_annotations
 conversation_id
-created_at
 entities.annotations
 entities.cashtags
 entities.hashtags
@@ -65,17 +64,17 @@ geo.id
 geo.name
 geo.place_id
 geo.place_type
-id
+in_reply_to_user.id
 in_reply_to_user.created_at
+in_reply_to_user.username
+in_reply_to_user.name
 in_reply_to_user.description
 in_reply_to_user.entities.description.cashtags
 in_reply_to_user.entities.description.hashtags
 in_reply_to_user.entities.description.mentions
 in_reply_to_user.entities.description.urls
 in_reply_to_user.entities.url.urls
-in_reply_to_user.id
 in_reply_to_user.location
-in_reply_to_user.name
 in_reply_to_user.pinned_tweet_id
 in_reply_to_user.profile_image_url
 in_reply_to_user.protected
@@ -84,7 +83,6 @@ in_reply_to_user.public_metrics.following_count
 in_reply_to_user.public_metrics.listed_count
 in_reply_to_user.public_metrics.tweet_count
 in_reply_to_user.url
-in_reply_to_user.username
 in_reply_to_user.verified
 in_reply_to_user.withheld.country_codes
 in_reply_to_user_id
@@ -97,27 +95,28 @@ public_metrics.retweet_count
 referenced_tweets
 reply_settings
 source
-text
 type
 withheld.scope
 withheld.copyright
-withheld.country_codes""".split(
+withheld.country_codes
+__twarc.retrieved_at
+__twarc.url
+__twarc.version
+""".split(
     "\n"
 )
 
-DEFAULT_USERS_COLUMNS = """__twarc.retrieved_at
-__twarc.url
-__twarc.version
+DEFAULT_USERS_COLUMNS = """id
 created_at
+username
+name
 description
 entities.description.cashtags
 entities.description.hashtags
 entities.description.mentions
 entities.description.urls
 entities.url.urls
-id
 location
-name
 pinned_tweet_id
 pinned_tweet
 profile_image_url
@@ -127,11 +126,14 @@ public_metrics.following_count
 public_metrics.listed_count
 public_metrics.tweet_count
 url
-username
 verified
 withheld.scope
 withheld.copyright
-withheld.country_codes""".split(
+withheld.country_codes
+__twarc.retrieved_at
+__twarc.url
+__twarc.version
+""".split(
     "\n"
 )
 
@@ -171,11 +173,17 @@ class CSVConverter:
         )
         self.columns = list()
         if input_tweet_columns:
-            self.columns.extend(x for x in DEFAULT_TWEET_COLUMNS if x not in self.columns)
+            self.columns.extend(
+                x for x in DEFAULT_TWEET_COLUMNS if x not in self.columns
+            )
         if input_users_columns:
-            self.columns.extend(x for x in DEFAULT_USERS_COLUMNS if x not in self.columns)
+            self.columns.extend(
+                x for x in DEFAULT_USERS_COLUMNS if x not in self.columns
+            )
         if extra_input_columns:
-            self.columns.extend(x for x in extra_input_columns.split(",") if x not in self.columns)
+            self.columns.extend(
+                x for x in extra_input_columns.split(",") if x not in self.columns
+            )
 
         self.output_columns = (
             output_columns.split(",") if output_columns else self.columns
