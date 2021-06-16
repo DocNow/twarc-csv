@@ -310,7 +310,7 @@ class CSVConverter:
         if len(diff) > 0:
             click.echo(
                 click.style(
-                    f"💔 ERROR: Unexpected Data: \n\"{','.join(diff)}\"\n to fix, add these with --extra-input-columns. Skipping entire batch of {len(_df)} tweets!",
+                    f"💔 ERROR: {len(diff)} Unexpected items in data! to fix, add these with:\n--extra-input-columns \"{','.join(diff)}\"\nSkipping entire batch of {len(_df)} tweets!",
                     fg="red",
                 ),
                 err=True,
