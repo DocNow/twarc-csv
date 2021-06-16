@@ -246,22 +246,17 @@ class CSVConverter:
         for tweet in tweets:
             # Order the fields in the json, because JSON key order isn't guaranteed.
             # Needed so that different batches won't produce different ordered columns
-            json_keys = sorted(tweet.keys())
-            selected_field_order = list()
-
+            field_order = list(sorted(tweet.keys()))
             # Opinion: always put in id,created_at,text first, and then the rest
-            if "id" in json_keys:
-                selected_field_order.append(json_keys.pop(json_keys.index("id")))
-            if "created_at" in json_keys:
-                selected_field_order.append(
-                    json_keys.pop(json_keys.index("created_at"))
-                )
-            if "text" in json_keys:
-                selected_field_order.append(json_keys.pop(json_keys.index("text")))
-            selected_field_order.extend(json_keys)
-
-            tweet = OrderedDict((k, tweet[k]) for k in selected_field_order)
-
+            if "id" in field_order:
+                field_order.insert(0, field_order.pop(field_order.index("id")))
+            if "created_at" in field_order:
+                field_order.insert(1, field_order.pop(field_order.index("created_at")))
+            if "text" in field_order:
+                field_order.insert(2, field_order.pop(field_order.index("text")))
+            if "__twarc" in field_order:
+                field_order.append(field_order.pop(field_order.index("__twarc")))
+            tweet = OrderedDict((k, tweet[k]) for k in field_order)
             self.counts["tweets"] = self.counts["tweets"] + 1
             if tweet["id"] in self.dataset_ids:
                 self.counts["duplicates"] = self.counts["duplicates"] + 1
