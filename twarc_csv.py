@@ -226,6 +226,10 @@ class CSVConverter:
             for referenced_tweet in tweet["referenced_tweets"]:
                 # extract the referenced tweet as a new row
                 self.counts["referenced_tweets"] = self.counts["referenced_tweets"] + 1
+                # inherit __twarc metadata from parent tweet
+                referenced_tweet["__twarc"] = (
+                    tweet["__twarc"] if "__twarc" in tweet else None
+                )
                 yield referenced_tweet
             # leave behind the reference, but not the full tweet
             tweet["referenced_tweets"] = [
