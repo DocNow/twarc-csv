@@ -95,10 +95,10 @@ public_metrics.retweet_count
 referenced_tweets
 reply_settings
 source
-type
 withheld.scope
 withheld.copyright
 withheld.country_codes
+__type
 __twarc.retrieved_at
 __twarc.url
 __twarc.version
@@ -241,7 +241,7 @@ class CSVConverter:
                 yield referenced_tweet
             # leave behind the reference, but not the full tweet
             tweet["referenced_tweets"] = [
-                {"type": r["type"], "id": r["id"]} for r in tweet["referenced_tweets"]
+                {"__type": r["type"], "id": r["id"]} for r in tweet["referenced_tweets"]
             ]
 
         # Deal with pinned tweets for user datasets, `tweet` here is actually a user:
