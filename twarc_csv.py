@@ -84,6 +84,8 @@ in_reply_to_user.public_metrics.listed_count
 in_reply_to_user.public_metrics.tweet_count
 in_reply_to_user.url
 in_reply_to_user.verified
+in_reply_to_user.withheld.scope
+in_reply_to_user.withheld.copyright
 in_reply_to_user.withheld.country_codes
 in_reply_to_user_id
 lang
