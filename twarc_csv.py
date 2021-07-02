@@ -195,6 +195,7 @@ class CSVConverter:
             "lines": 0,
             "tweets": 0,
             "referenced_tweets": 0,
+            "unavailable": 0,
             "parse_errors": 0,
             "duplicates": 0,
             "rows": 0,
@@ -240,7 +241,11 @@ class CSVConverter:
                 referenced_tweet["__twarc"] = (
                     tweet["__twarc"] if "__twarc" in tweet else None
                 )
-                yield referenced_tweet
+                # write tweet as new row if referenced tweet exists:
+                if len(referenced_tweet.keys()) > 3:
+                    yield referenced_tweet
+                else:
+                    self.counts["unavailable"] = self.counts["unavailable"] + 1
             # leave behind the reference, but not the full tweet
             tweet["referenced_tweets"] = [
                 {"type": r["type"], "id": r["id"]} for r in tweet["referenced_tweets"]
@@ -476,20 +481,27 @@ def csv(
     )
     converter.process()
 
-    errors = (
-        click.style(
-            f"{converter.counts['parse_errors']} failed to parse. See twarc.log for details.\n",
-            fg="red",
-        )
-        if converter.counts["parse_errors"] > 0
-        else ""
-    )
-
     if show_stats and outfile.name != "<stdout>":
+
+        errors = (
+            click.style(
+                f"{converter.counts['parse_errors']} failed to parse. See twarc.log for details.\n",
+                fg="red",
+            )
+            if converter.counts["parse_errors"] > 0
+            else ""
+        )
+
+        referenced_stats = (
+            f"{converter.counts['referenced_tweets']} were referenced tweets, {converter.counts['duplicates']} were referenced multiple times, and {converter.counts['unavailable']} were referenced but not available in the API responses.\n"
+            if inline_referenced_tweets
+            else ""
+        )
+
         click.echo(
             f"\nℹ️\n"
-            + f"Read {converter.counts['tweets']} tweets from {converter.counts['lines']} lines. \n"
-            + f"{converter.counts['referenced_tweets']} were referenced tweets, {converter.counts['duplicates']} were duplicates.\n"
+            + f"Parsed {converter.counts['tweets']} tweets from {converter.counts['lines']} lines in the file. \n"
+            + referenced_stats
             + errors
             + f"Wrote {converter.counts['rows']} rows and output {converter.counts['output_columns']} of {converter.counts['input_columns']} input columns in the CSV.\n",
             err=True,
