@@ -241,7 +241,7 @@ class CSVConverter:
                 referenced_tweet["__twarc"] = (
                     tweet["__twarc"] if "__twarc" in tweet else None
                 )
-                # write tweet as new row if referenced tweet exists:
+                # write tweet as new row if referenced tweet exists (has more than the 3 default fields):
                 if len(referenced_tweet.keys()) > 3:
                     yield referenced_tweet
                 else:
