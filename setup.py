@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setuptools.setup(
     name="twarc-csv",
-    version="0.3.5",
+    version="0.3.6",
     url="https://github.com/docnow/twarc-csv",
     author="Igor Brigadir",
     author_email="igor.brigadir@gmail.com",
@@ -16,7 +16,7 @@ setuptools.setup(
     python_requires=">=3.3",
     install_requires=[
         "twarc>=2.3.4",
-        "pandas>=1.2.3",
+        "pandas>=1.2.5",
         "more-itertools>=8.7.0",
         "tqdm>=4.59.0",
     ],
