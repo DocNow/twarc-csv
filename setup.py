@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.3",
     install_requires=[
-        "twarc>=2.1.7",
+        "twarc>=2.3.4",
         "pandas>=1.2.3",
         "more-itertools>=8.7.0",
         "tqdm>=4.59.0",
