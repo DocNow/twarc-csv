@@ -4,7 +4,7 @@ import click
 import logging
 import itertools
 import pandas as pd
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from collections import OrderedDict
 from more_itertools import ichunked
 from twarc import ensure_flattened
@@ -442,6 +442,16 @@ def csv(
         click.echo(
             click.style(
                 f"💔 Cannot convert files in-place, specify a different output file!",
+                fg="red",
+            ),
+            err=True,
+        )
+        return
+
+    if os.stat(infile.name).st_size == 0:
+        click.echo(
+            click.style(
+                f"💔 Input file is empty! Nothing to convert.",
                 fg="red",
             ),
             err=True,
