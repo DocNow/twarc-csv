@@ -455,7 +455,7 @@ def csv(
         )
         return
 
-    if os.stat(infile.name).st_size == 0:
+    if not (infile.name == "<stdin>" or outfile.name == "<stdout>") and os.stat(infile.name).st_size == 0:
         click.echo(
             click.style(
                 f"💔 Input file is empty! Nothing to convert.",
