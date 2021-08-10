@@ -210,13 +210,13 @@ class CSVConverter:
         """
         line = self.infile.readline()
         while line:
-            self.counts["lines"] = self.counts["lines"] + 1
+            self.counts["lines"] += 1
             if line.strip() != "":
                 try:
                     o = json.loads(line)
                     yield o
                 except Exception as ex:
-                    self.counts["parse_errors"] = self.counts["parse_errors"] + 1
+                    self.counts["parse_errors"] += 1
                     log.error(f"Error when trying to parse json: '{line}' {ex}")
             if not self.std:
                 self.progress.update(self.infile.tell() - self.progress.n)
@@ -237,7 +237,7 @@ class CSVConverter:
         if "referenced_tweets" in tweet and self.inline_referenced_tweets:
             for referenced_tweet in tweet["referenced_tweets"]:
                 # extract the referenced tweet as a new row
-                self.counts["referenced_tweets"] = self.counts["referenced_tweets"] + 1
+                self.counts["referenced_tweets"] += 1
                 # inherit __twarc metadata from parent tweet
                 referenced_tweet["__twarc"] = (
                     tweet["__twarc"] if "__twarc" in tweet else None
@@ -246,7 +246,7 @@ class CSVConverter:
                 if len(referenced_tweet.keys()) > 3:
                     yield referenced_tweet
                 else:
-                    self.counts["unavailable"] = self.counts["unavailable"] + 1
+                    self.counts["unavailable"] += 1
             # leave behind the reference, but not the full tweet
             tweet["referenced_tweets"] = [
                 {"type": r["type"], "id": r["id"]} for r in tweet["referenced_tweets"]
@@ -266,9 +266,9 @@ class CSVConverter:
         for tweet in tweets:
             if "id" in tweet:
                 tweet_id = tweet["id"]
-                self.counts["tweets"] = self.counts["tweets"] + 1
+                self.counts["tweets"] += 1
                 if tweet_id in self.dataset_ids:
-                    self.counts["duplicates"] = self.counts["duplicates"] + 1
+                    self.counts["duplicates"] += 1
 
                 if self.allow_duplicates:
                     yield tweet
@@ -278,7 +278,7 @@ class CSVConverter:
 
                 self.dataset_ids.add(tweet_id)
             else:
-                self.counts["non_tweets"] = self.counts["non_tweets"] + 1
+                self.counts["non_tweets"] += 1
 
     def _process_dataframe(self, _df):
         # (Optional) json encode all
@@ -330,7 +330,7 @@ class CSVConverter:
             log.error(
                 f"CSV Unexpected Data: \"{','.join(diff)}\". Expected {len(self.columns)} columns, got {len(_df.columns)}. Skipping entire batch of {len(_df)} tweets!"
             )
-            self.counts["parse_errors"] = self.counts["parse_errors"] + len(_df)
+            self.counts["parse_errors"] += len(_df)
             return pd.DataFrame(columns=self.columns)
 
         return self._process_dataframe(_df.reindex(columns=self.columns))
@@ -349,7 +349,7 @@ class CSVConverter:
             mode = "a+"
             header = False
 
-        self.counts["rows"] = self.counts["rows"] + len(_df)
+        self.counts["rows"] += len(_df)
         _df.to_csv(
             self.outfile,
             mode=mode,
