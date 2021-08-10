@@ -196,6 +196,7 @@ class CSVConverter:
             "tweets": 0,
             "referenced_tweets": 0,
             "unavailable": 0,
+            "non_tweets": 0,
             "parse_errors": 0,
             "duplicates": 0,
             "rows": 0,
@@ -263,17 +264,21 @@ class CSVConverter:
         ToDo: Drop columns and dedupe etc here.
         """
         for tweet in tweets:
-            self.counts["tweets"] = self.counts["tweets"] + 1
-            if tweet["id"] in self.dataset_ids:
-                self.counts["duplicates"] = self.counts["duplicates"] + 1
+            if "id" in tweet:
+                tweet_id = tweet["id"]
+                self.counts["tweets"] = self.counts["tweets"] + 1
+                if tweet_id in self.dataset_ids:
+                    self.counts["duplicates"] = self.counts["duplicates"] + 1
 
-            if self.allow_duplicates:
-                yield tweet
-            else:
-                if tweet["id"] not in self.dataset_ids:
+                if self.allow_duplicates:
                     yield tweet
+                else:
+                    if tweet_id not in self.dataset_ids:
+                        yield tweet
 
-            self.dataset_ids.add(tweet["id"])
+                self.dataset_ids.add(tweet_id)
+            else:
+                self.counts["non_tweets"] = self.counts["non_tweets"] + 1
 
     def _process_dataframe(self, _df):
         # (Optional) json encode all
@@ -455,7 +460,10 @@ def csv(
         )
         return
 
-    if not (infile.name == "<stdin>" or outfile.name == "<stdout>") and os.stat(infile.name).st_size == 0:
+    if (
+        not (infile.name == "<stdin>" or outfile.name == "<stdout>")
+        and os.stat(infile.name).st_size == 0
+    ):
         click.echo(
             click.style(
                 f"💔 Input file is empty! Nothing to convert.",
@@ -500,7 +508,7 @@ def csv(
 
         click.echo(
             f"\nℹ️\n"
-            + f"Parsed {converter.counts['tweets']} tweets from {converter.counts['lines']} lines in the file. \n"
+            + f"Parsed {converter.counts['tweets']} tweets from {converter.counts['lines']} lines in the file, and {converter.counts['non_tweets']} non tweet objects.\n"
             + referenced_stats
             + errors
             + f"Wrote {converter.counts['rows']} rows and output {converter.counts['output_columns']} of {converter.counts['input_columns']} input columns in the CSV.\n",
