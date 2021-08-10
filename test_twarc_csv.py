@@ -23,6 +23,13 @@ def _process_file(fname, expected=None):
     assert type(df["text"]) == pandas.Series
 
 
+def test_empty():
+    input_file = test_data / f"empty.jsonl"
+    output_file = test_data / f"empty.csv"
+    result = runner.invoke(twarc_csv.csv, [str(input_file), str(output_file)])
+    assert not output_file.is_file()
+
+
 def test_noflat():
     _process_file("noflat")
 
@@ -31,9 +38,17 @@ def test_flat():
     _process_file("flat")
 
 
+def test_expected_tweets():
+    _process_file("two_tweets", 2)
+
+
 def test_withheld():
     _process_file("withheld")
 
 
-def test_expected_tweets():
-    _process_file("two_tweets", 2)
+def test_withheld2():
+    _process_file("media_policy_violation_on")
+
+
+def test_withheld3():
+    _process_file("media_policy_violation_off")
