@@ -44,7 +44,7 @@ Options:
 
   --inline-referenced-tweets / --no-inline-referenced-tweets
                                   Output referenced tweets inline as separate
-                                  rows. Default: yes
+                                  rows. Default: no
 
   --allow-duplicates / --no-allow-duplicates
                                   Remove duplicate tweets by ID. Default: yes

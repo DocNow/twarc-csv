@@ -148,7 +148,7 @@ class CSVConverter:
         json_encode_all=False,
         json_encode_lists=True,
         json_encode_text=False,
-        inline_referenced_tweets=True,
+        inline_referenced_tweets=False,
         allow_duplicates=False,
         input_tweet_columns=True,
         input_users_columns=False,
@@ -392,8 +392,8 @@ class CSVConverter:
 )
 @click.option(
     "--inline-referenced-tweets/--no-inline-referenced-tweets",
-    default=True,
-    help="Output referenced tweets inline as separate rows. Default: yes",
+    default=False,
+    help="Output referenced tweets inline as separate rows. Default: no",
 )
 @click.option(
     "--allow-duplicates/--no-allow-duplicates",
