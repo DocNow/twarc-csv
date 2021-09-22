@@ -155,6 +155,7 @@ class CSVConverter:
         extra_input_columns="",
         output_columns="",
         batch_size=100,
+        hide_progress=False,
     ):
         self.infile = infile
         self.outfile = outfile
@@ -165,7 +166,9 @@ class CSVConverter:
         self.allow_duplicates = allow_duplicates
         self.batch_size = batch_size
         self.dataset_ids = set()
-        self.std = infile.name == "<stdin>" or outfile.name == "<stdout>"
+        self.std = (
+            infile.name == "<stdin>" or outfile.name == "<stdout>" or hide_progress
+        )
         self.progress = tqdm(
             unit="B",
             unit_scale=True,
@@ -431,6 +434,12 @@ class CSVConverter:
     default=True,
     help="Show stats about the dataset on completion. Default is show. Always hidden if you're using stdin / stdout pipes.",
 )
+@click.option(
+    "--hide-progress",
+    is_flag=True,
+    default=False,
+    help="Hide the Progress bar. Default: show progress.",
+)
 def csv(
     infile,
     outfile,
@@ -445,6 +454,7 @@ def csv(
     output_columns,
     batch_size,
     show_stats,
+    hide_progress,
 ):
     """
     Convert tweets to CSV.
@@ -486,6 +496,7 @@ def csv(
         extra_input_columns,
         output_columns,
         batch_size,
+        hide_progress,
     )
     converter.process()
 
