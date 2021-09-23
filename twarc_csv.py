@@ -147,15 +147,15 @@ class CSVConverter:
         self.allow_duplicates = allow_duplicates
         self.batch_size = batch_size
         self.dataset_ids = set()
-        self.std = (
+        self.hide_progress = (
             infile.name == "<stdin>" or outfile.name == "<stdout>" or hide_progress
         )
         self.progress = tqdm(
             unit="B",
             unit_scale=True,
             unit_divisor=1024,
-            total=os.stat(infile.name).st_size if not self.std else 1,
-            disable=self.std,
+            total=os.stat(infile.name).st_size if not self.hide_progress else 1,
+            disable=self.hide_progress,
         )
         self.columns = list()
         if input_tweet_columns:
@@ -190,7 +190,7 @@ class CSVConverter:
 
     def _read_lines(self):
         """
-        Generator for reading files line byline from a file. Progress bar is based on file size.
+        Generator for reading files line by line from a file. Progress bar is based on file size.
         """
         line = self.infile.readline()
         while line:
@@ -202,13 +202,13 @@ class CSVConverter:
                 except Exception as ex:
                     self.counts["parse_errors"] += 1
                     log.error(f"Error when trying to parse json: '{line}' {ex}")
-            if not self.std:
+            if not self.hide_progress:
                 self.progress.update(self.infile.tell() - self.progress.n)
             line = self.infile.readline()
 
     def _generate_tweets(self, batch):
         """
-        Generate flattened tweets from a batch.
+        Generate flattened tweets from a batch of parsed lines.
         """
         for item in batch:
             for tweet in ensure_flattened(item):
@@ -255,8 +255,7 @@ class CSVConverter:
 
     def _process_tweets(self, tweets):
         """
-        Process a single tweet before adding it to the dataframe.
-        ToDo: Drop columns and dedupe etc here.
+        Count, deduplicate tweets before adding them to the dataframe.
         """
         for tweet in tweets:
             if "id" in tweet:
@@ -302,8 +301,9 @@ class CSVConverter:
         return _df
 
     def _process_batch(self, batch):
-
-        # (Optional) append referenced tweets as new rows
+        """
+        Process a batch of lines into a tweet dataframe that will be merged with others.
+        """
         tweet_batch = itertools.chain.from_iterable(
             self._process_tweets(self._inline_referenced_tweets(tweet))
             for tweet in self._generate_tweets(batch)
@@ -397,7 +397,7 @@ class CSVConverter:
 @click.option(
     "--input-tweet-columns/--no-input-tweet-columns",
     default=True,
-    help="Use a default list of tweet column names in the input. Only modify this if you have processed the json yourself. Default: yes",
+    help="Use a default list of tweet column names in the input.  Default: yes",
 )
 @click.option(
     "--input-users-columns/--no-input-users-columns",
@@ -407,7 +407,7 @@ class CSVConverter:
 @click.option(
     "--extra-input-columns",
     default="",
-    help="Manually specify extra input columns. Comma separated string. Default is blank, no extra input columns.",
+    help="Manually specify extra input columns. Comma separated string. Only modify this if you have processed the json yourself. Default is blank, no extra input columns.",
 )
 @click.option(
     "--output-columns",
