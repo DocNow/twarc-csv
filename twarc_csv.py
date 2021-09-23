@@ -1,11 +1,12 @@
 import os
 import json
+import copy
 import click
 import logging
 import itertools
 import pandas as pd
 from tqdm.auto import tqdm
-from collections import OrderedDict
+from collections import OrderedDict, ChainMap
 from more_itertools import ichunked
 from twarc import ensure_flattened
 
@@ -64,29 +65,6 @@ geo.id
 geo.name
 geo.place_id
 geo.place_type
-in_reply_to_user.id
-in_reply_to_user.created_at
-in_reply_to_user.username
-in_reply_to_user.name
-in_reply_to_user.description
-in_reply_to_user.entities.description.cashtags
-in_reply_to_user.entities.description.hashtags
-in_reply_to_user.entities.description.mentions
-in_reply_to_user.entities.description.urls
-in_reply_to_user.entities.url.urls
-in_reply_to_user.location
-in_reply_to_user.pinned_tweet_id
-in_reply_to_user.profile_image_url
-in_reply_to_user.protected
-in_reply_to_user.public_metrics.followers_count
-in_reply_to_user.public_metrics.following_count
-in_reply_to_user.public_metrics.listed_count
-in_reply_to_user.public_metrics.tweet_count
-in_reply_to_user.url
-in_reply_to_user.verified
-in_reply_to_user.withheld.scope
-in_reply_to_user.withheld.copyright
-in_reply_to_user.withheld.country_codes
 in_reply_to_user_id
 lang
 possibly_sensitive
@@ -235,7 +213,7 @@ class CSVConverter:
 
     def _inline_referenced_tweets(self, tweet):
         """
-        Insert referenced tweets into the main CSV
+        # (Optional) Insert referenced tweets into the main CSV as new rows
         """
         if "referenced_tweets" in tweet and self.inline_referenced_tweets:
             for referenced_tweet in tweet["referenced_tweets"]:
@@ -247,19 +225,30 @@ class CSVConverter:
                 )
                 # write tweet as new row if referenced tweet exists (has more than the 3 default fields):
                 if len(referenced_tweet.keys()) > 3:
-                    yield referenced_tweet
+                    yield self._format_tweet(referenced_tweet)
                 else:
                     self.counts["unavailable"] += 1
-            # leave behind the reference, but not the full tweet
-            tweet["referenced_tweets"] = [
-                {"type": r["type"], "id": r["id"]} for r in tweet["referenced_tweets"]
-            ]
+        yield self._format_tweet(tweet)
 
+    def _format_tweet(self, tweet):
         # Deal with pinned tweets for user datasets, `tweet` here is actually a user:
         # remove the tweet from a user dataset, pinned_tweet_id remains:
+        tweet = copy.deepcopy(tweet)
         tweet.pop("pinned_tweet", None)
-
-        yield tweet
+        # Remove in_reply_to_user, in_reply_to_user_id remains:
+        tweet.pop("in_reply_to_user", None)
+        # Deal with referenced_tweets
+        if "referenced_tweets" in tweet:
+            # reconstruct referenced_tweets object
+            referenced_tweets = [
+                {r["type"]: {"id": r["id"]}} for r in tweet["referenced_tweets"]
+            ]
+            # leave behind references, but not the full tweets
+            tweet["referenced_tweets"] = dict(ChainMap(*referenced_tweets))
+        else:
+            tweet["referenced_tweets"] = {}
+        tweet.pop("type", None)
+        return tweet
 
     def _process_tweets(self, tweets):
         """
@@ -272,15 +261,14 @@ class CSVConverter:
                 self.counts["tweets"] += 1
                 if tweet_id in self.dataset_ids:
                     self.counts["duplicates"] += 1
-
                 if self.allow_duplicates:
                     yield tweet
                 else:
                     if tweet_id not in self.dataset_ids:
                         yield tweet
-
                 self.dataset_ids.add(tweet_id)
             else:
+                # non tweet objects are usually streaming API errors etc.
                 self.counts["non_tweets"] += 1
 
     def _process_dataframe(self, _df):
