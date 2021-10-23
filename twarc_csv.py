@@ -138,12 +138,12 @@ count
 class DataFrameConverter:
     """
     Convert a set of JSON Objects into a Pandas DataFrame object.
-    You can call this directly on a small set of tweets, but memory is quickly consumed for larger datasets.
+    You can call this directly on a small set of objects, but memory is quickly consumed for larger datasets.
 
     This class can accept individual tweets or whole response objects.
 
     Args:
-        objects (iterable): JSON Objects to convert.
+        objects (iterable): JSON Objects to convert. Can be users, tweets, or other API objects.
         input_data_type (str): data type: `tweets` or `users` or `compliance` or `counts`
     Returns:
         DataFrame: The objects provided as a Pandas DataFrame.
@@ -159,7 +159,7 @@ class DataFrameConverter:
         merge_retweets=True,
         allow_duplicates=False,
         extra_input_columns="",
-        output_columns="",
+        output_columns=None,
         dataset_ids=None,
         counts=None,
     ):
@@ -171,19 +171,19 @@ class DataFrameConverter:
         self.allow_duplicates = allow_duplicates
 
         self.columns = list()
-        if "tweets" in input_data_type:
+        if input_data_type == "tweets":
             self.columns.extend(
                 x for x in DEFAULT_TWEET_COLUMNS if x not in self.columns
             )
-        if "users" in input_data_type:
+        if input_data_type == "users":
             self.columns.extend(
                 x for x in DEFAULT_USER_COLUMNS if x not in self.columns
             )
-        if "compliance" in input_data_type:
+        if input_data_type == "compliance":
             self.columns.extend(
                 x for x in DEFAULT_COMPLIANCE_COLUMNS if x not in self.columns
             )
-        if "counts" in input_data_type:
+        if input_data_type == "counts":
             self.columns.extend(
                 x for x in DEFAULT_COUNTS_COLUMNS if x not in self.columns
             )
@@ -206,12 +206,12 @@ class DataFrameConverter:
                 "quotes": 0,
                 "replies": 0,
                 "unavailable": 0,
-                "non_tweets": 0,
+                "non_objects": 0,
                 "parse_errors": 0,
                 "duplicates": 0,
                 "rows": 0,
                 "input_columns": len(self.columns),
-                "output_columns": len(output_columns),
+                "output_columns": len(self.output_columns),
             }
         )
 
@@ -255,16 +255,25 @@ class DataFrameConverter:
         tweet.pop("in_reply_to_user", None)
 
         if "referenced_tweets" in tweet:
+
+            # Count Replies:
+            replies = [t for t in tweet["referenced_tweets"] if t["type"] == "replied_to"]
+            reply_tweet = replies[-1] if replies else None
+            if "in_reply_to_user_id" in tweet or reply_tweet:
+                self.counts["replies"] += 1
+
             # Extract Retweet only
             rts = [t for t in tweet["referenced_tweets"] if t["type"] == "retweeted"]
             retweeted_tweet = rts[-1] if rts else None
             if retweeted_tweet and "author_id" in retweeted_tweet:
+                self.counts["retweets"] += 1
                 tweet["retweeted_user_id"] = retweeted_tweet["author_id"]
 
             # Extract Quoted tweet
             qts = [t for t in tweet["referenced_tweets"] if t["type"] == "quoted"]
             quoted_tweet = qts[-1] if qts else None
             if quoted_tweet and "author_id" in quoted_tweet:
+                self.counts["quotes"] += 1
                 tweet["quoted_user_id"] = quoted_tweet["author_id"]
 
             # Process Retweets:
@@ -318,7 +327,7 @@ class DataFrameConverter:
                 self.dataset_ids.add(tweet_id)
             else:
                 # non tweet objects are usually streaming API errors etc.
-                self.counts["non_tweets"] += 1
+                self.counts["non_objects"] += 1
 
     def _process_dataframe(self, _df):
         """
@@ -367,7 +376,10 @@ class DataFrameConverter:
         if len(diff) > 0:
             click.echo(
                 click.style(
-                    f"💔 ERROR: {len(diff)} Unexpected items in data! to fix, add these with:\n--extra-input-columns \"{','.join(diff)}\"\nSkipping entire batch of {len(_df)} tweets!",
+                    f"💔 ERROR: {len(diff)} Unexpected items in data! \n"
+                    "Are you sure you specified the correct --input-data-type?\n"
+                    "If the object type is correct, add extra columns with:"
+                    f"\n--extra-input-columns \"{','.join(diff)}\"\nSkipping entire batch of {len(_df)} tweets!",
                     fg="red",
                 ),
                 err=True,
@@ -470,6 +482,16 @@ class CSVConverter:
     ),
 )
 @click.option(
+    "--inline-referenced-tweets/--no-inline-referenced-tweets",
+    default=False,
+    help="Output referenced tweets inline as separate rows. Default: no.",
+)
+@click.option(
+    "--merge-retweets/--no-merge-retweets",
+    default=True,
+    help="Merge original tweet metadata into retweets. The Retweet Text, metrics and entities are merged from the original tweet. Default: Yes.",
+)
+@click.option(
     "--json-encode-all/--no-json-encode-all",
     default=False,
     help="JSON encode / escape all fields. Default: no",
@@ -480,19 +502,9 @@ class CSVConverter:
     help="Apply JSON encode / escape to text fields. Default: no",
 )
 @click.option(
-    "--inline-referenced-tweets/--no-inline-referenced-tweets",
-    default=False,
-    help="Output referenced tweets inline as separate rows. Default: no.",
-)
-@click.option(
     "--json-encode-lists/--no-json-encode-lists",
     default=True,
     help="JSON encode / escape lists. Default: yes",
-)
-@click.option(
-    "--merge-retweets/--no-merge-retweets",
-    default=True,
-    help="Merge original tweet metadata into retweets. The Retweet Text, metrics and entities are merged from the original tweet. Default: Yes.",
 )
 @click.option(
     "--allow-duplicates",
@@ -605,16 +617,30 @@ def csv(
         )
 
         referenced_stats = (
-            f"{converter.counts['referenced_tweets']} were referenced tweets, {converter.counts['duplicates']} were referenced multiple times, and {converter.counts['unavailable']} were referenced but not available in the API responses.\n"
+            f"{converter.counts['referenced_tweets']} were referenced {input_data_type}:\n"
+            f"{converter.counts['retweets']} retweets, {converter.counts['quotes']} quotes, and {converter.counts['replies']} replies.\n"
+            f"{converter.counts['duplicates']} were referenced multiple times, and {converter.counts['unavailable']} were referenced but not available in the API responses.\n"
             if inline_referenced_tweets
             else ""
         )
 
+        non_objects = (
+            f", and {converter.counts['non_objects']} non {input_data_type} objects"
+            if converter.counts["non_objects"]
+            else ""
+        )
+
+        output_columns = (
+            f"{converter.counts['output_columns']} of {converter.counts['input_columns']} input"
+            if converter.counts["output_columns"] != converter.counts["input_columns"]
+            else converter.counts["output_columns"]
+        )
+
         click.echo(
             f"\nℹ️\n"
-            + f"Parsed {converter.counts['tweets']} tweets from {converter.counts['lines']} lines in the file, and {converter.counts['non_tweets']} non tweet objects.\n"
+            + f"Parsed {converter.counts['tweets']} {input_data_type} objects from {converter.counts['lines']} lines in the input file{non_objects}.\n"
             + referenced_stats
             + errors
-            + f"Wrote {converter.counts['rows']} rows and output {converter.counts['output_columns']} of {converter.counts['input_columns']} input columns in the CSV.\n",
+            + f"Wrote {converter.counts['rows']} rows and output {output_columns} columns in the CSV.\n",
             err=True,
         )
