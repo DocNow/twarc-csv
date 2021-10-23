@@ -369,8 +369,7 @@ class DataFrameConverter:
             self._process_tweets(self._inline_referenced_tweets(tweet))
             for tweet in self._generate_tweets(objects)
         )
-        _df = pd.json_normalize(list(tweet_batch), errors="ignore")
-
+        _df = pd.json_normalize(list(tweet_batch))
         # Check for mismatched columns
         diff = set(_df.columns) - set(self.columns)
         if len(diff) > 0:
