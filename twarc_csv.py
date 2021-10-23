@@ -214,13 +214,13 @@ class DataFrameConverter:
             }
         )
 
-    def _generate_tweets(self, objects):
+    def _flatten_objects(self, objects):
         """
         Generate flattened tweets from a batch of parsed lines.
         """
-        for item in objects:
-            for tweet in ensure_flattened(item):
-                yield tweet
+        for o in objects:
+            for item in ensure_flattened(o):
+                yield item
 
     def _inline_referenced_tweets(self, tweet):
         """
@@ -243,7 +243,7 @@ class DataFrameConverter:
 
     def _format_tweet(self, tweet):
         """
-        Make the tweet objects easier to deal with, removing extra info and changing the structure
+        Make the tweet objects easier to deal with, removing extra info and changing the structure.
         """
         # Make a copy of the original flattened tweet
         tweet = copy.deepcopy(tweet)
@@ -315,7 +315,7 @@ class DataFrameConverter:
 
     def _process_tweets(self, tweets):
         """
-        Count, deduplicate tweets before adding them to the dataframe.
+        Count, deduplicate objects before adding them to the dataframe.
         """
         for tweet in tweets:
             if "id" in tweet:
@@ -371,7 +371,7 @@ class DataFrameConverter:
 
         tweet_batch = itertools.chain.from_iterable(
             self._process_tweets(self._inline_referenced_tweets(tweet))
-            for tweet in self._generate_tweets(objects)
+            for tweet in self._flatten_objects(objects)
         )
         _df = pd.json_normalize(list(tweet_batch))
         # Check for mismatched columns
