@@ -101,7 +101,6 @@ entities.description.urls
 entities.url.urls
 location
 pinned_tweet_id
-pinned_tweet
 profile_image_url
 protected
 public_metrics.followers_count
@@ -257,7 +256,9 @@ class DataFrameConverter:
         if "referenced_tweets" in tweet:
 
             # Count Replies:
-            replies = [t for t in tweet["referenced_tweets"] if t["type"] == "replied_to"]
+            replies = [
+                t for t in tweet["referenced_tweets"] if t["type"] == "replied_to"
+            ]
             reply_tweet = replies[-1] if replies else None
             if "in_reply_to_user_id" in tweet or reply_tweet:
                 self.counts["replies"] += 1
@@ -297,6 +298,7 @@ class DataFrameConverter:
             tweet["referenced_tweets"] = dict(ChainMap(*referenced_tweets))
         else:
             tweet["referenced_tweets"] = {}
+
         # Remove `type` left over from referenced tweets
         tweet.pop("type", None)
         # Remove empty objects
@@ -306,6 +308,8 @@ class DataFrameConverter:
             tweet.pop("entities", None)
         if "public_metrics" in tweet and not tweet["public_metrics"]:
             tweet.pop("public_metrics", None)
+        if "pinned_tweet" in tweet and not tweet["pinned_tweet"]:
+            tweet.pop("pinned_tweet", None)
 
         return tweet
 
@@ -615,10 +619,16 @@ def csv(
             else ""
         )
 
+        dupe_stats = (
+            f"{converter.counts['duplicates']} were duplicates. "
+            if converter.counts["duplicates"] and not inline_referenced_tweets
+            else ""
+        )
+
         referenced_stats = (
             f"{converter.counts['referenced_tweets']} were referenced {input_data_type}:\n"
             f"{converter.counts['retweets']} retweets, {converter.counts['quotes']} quotes, and {converter.counts['replies']} replies.\n"
-            f"{converter.counts['duplicates']} were referenced multiple times, and {converter.counts['unavailable']} were referenced but not available in the API responses.\n"
+            f"{converter.counts['duplicates']} were duplicates, and {converter.counts['unavailable']} were referenced but not available in the API responses.\n"
             if inline_referenced_tweets
             else ""
         )
@@ -638,6 +648,7 @@ def csv(
         click.echo(
             f"\nℹ️\n"
             + f"Parsed {converter.counts['tweets']} {input_data_type} objects from {converter.counts['lines']} lines in the input file{non_objects}.\n"
+            + dupe_stats
             + referenced_stats
             + errors
             + f"Wrote {converter.counts['rows']} rows and output {output_columns} columns in the CSV.\n",
