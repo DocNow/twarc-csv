@@ -5,7 +5,7 @@ import click
 import logging
 import itertools
 import pandas as pd
-from tqdm.auto import tqdm
+from twarc.decorators2 import FileSizeProgressBar
 from collections import ChainMap
 from more_itertools import ichunked
 from twarc import ensure_flattened
@@ -401,16 +401,7 @@ class CSVConverter:
         self.output_format = output_format
         self.batch_size = batch_size
         self.hide_progress = hide_progress
-        self.hide_progress = (
-            infile.name == "<stdin>" or outfile.name == "<stdout>" or hide_progress
-        )
-        self.progress = tqdm(
-            unit="B",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=os.stat(infile.name).st_size if not self.hide_progress else 1,
-            disable=self.hide_progress,
-        )
+        self.progress = FileSizeProgressBar(infile, outfile, disable=hide_progress)
 
     def _read_lines(self):
         """
