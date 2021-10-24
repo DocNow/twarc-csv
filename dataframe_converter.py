@@ -128,8 +128,13 @@ reason
 
 DEFAULT_COUNTS_COLUMNS = """start
 end
-count
-"""
+tweet_count
+__twarc.retrieved_at
+__twarc.url
+__twarc.version
+""".split(
+    "\n"
+)
 
 
 class DataFrameConverter:
@@ -166,7 +171,7 @@ class DataFrameConverter:
         self.inline_referenced_tweets = inline_referenced_tweets
         self.merge_retweets = merge_retweets
         self.allow_duplicates = allow_duplicates
-
+        self.input_data_type = input_data_type
         self.columns = list()
         if input_data_type == "tweets":
             self.columns.extend(
@@ -327,6 +332,9 @@ class DataFrameConverter:
                     if tweet_id not in self.dataset_ids:
                         yield tweet
                 self.dataset_ids.add(tweet_id)
+            elif self.input_data_type == "counts":
+                self.counts["tweets"] += 1
+                yield tweet
             else:
                 # non tweet objects are usually streaming API errors etc.
                 self.counts["non_objects"] += 1

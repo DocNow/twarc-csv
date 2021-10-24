@@ -24,7 +24,8 @@ def _process_file(fname, expected=None, extra=""):
         assert len(df) == expected
     else:
         assert len(df) > 0
-    assert type(df["id"]) == pandas.Series  # todo: fix for counts!
+    if "counts" not in extra:
+        assert type(df["id"]) == pandas.Series
     if output_file.is_file():
         output_file.unlink()
 
@@ -86,3 +87,7 @@ def test_compliance_users():
 
 def test_compliance_tweets():
     _process_file("tweets_compliance", 2, extra=" --input-data-type compliance")
+
+
+def test_counts():
+    _process_file("counts", 169, extra=" --input-data-type counts")
