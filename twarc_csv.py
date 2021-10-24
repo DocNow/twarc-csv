@@ -7,6 +7,9 @@ import logging
 
 log = logging.getLogger("twarc")
 
+CSVConverter = csv_writer.CSVConverter
+DataFrameConverter = dataframe_converter.DataFrameConverter
+
 
 @click.command()
 @click.argument("infile", type=click.File("r", encoding="utf8"), default="-")
@@ -122,7 +125,7 @@ def csv(
         )
         return
 
-    converter = dataframe_converter.DataFrameConverter(
+    converter = DataFrameConverter(
         input_data_type=input_data_type,
         json_encode_all=json_encode_all,
         json_encode_text=json_encode_text,
@@ -134,7 +137,7 @@ def csv(
         output_columns=output_columns,
     )
 
-    writer = csv_writer.CSVConverter(
+    writer = CSVConverter(
         infile=infile,
         outfile=outfile,
         converter=converter,
