@@ -24,7 +24,7 @@ def _process_file(fname, expected=None, extra=""):
         assert len(df) == expected
     else:
         assert len(df) > 0
-    assert type(df["id"]) == pandas.Series #todo: fix for counts!
+    assert type(df["id"]) == pandas.Series  # todo: fix for counts!
     if output_file.is_file():
         output_file.unlink()
 
@@ -75,11 +75,14 @@ def test_withheld2():
 def test_withheld3():
     _process_file("media_policy_violation_off")
 
+
 def test_users():
     _process_file("users", 91, extra=" --input-data-type users")
 
+
 def test_compliance_users():
     _process_file("users_compliance", 1, extra=" --input-data-type compliance")
+
 
 def test_compliance_tweets():
     _process_file("tweets_compliance", 2, extra=" --input-data-type compliance")
