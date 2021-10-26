@@ -34,45 +34,47 @@ twarc2 csv --help
 For a list of options.
 
 ```
-Options:
-  --json-encode-all / --no-json-encode-all
-                                  JSON encode / escape all fields. Default: no
-  --json-encode-lists / --no-json-encode-lists
-                                  JSON encode / escape lists. Default: yes
-  --json-encode-text / --no-json-encode-text
-                                  JSON encode / escape text fields. Default: no
+Usage: twarc2 csv [OPTIONS] [INFILE] [OUTFILE]
 
+  Convert tweets to CSV.
+
+Options:
+  --input-data-type [tweets|users|counts|compliance]
+                                  Input data type - you can turn "tweets",
+                                  "users", "counts" or "compliance" data into
+                                  CSV.
   --inline-referenced-tweets / --no-inline-referenced-tweets
                                   Output referenced tweets inline as separate
-                                  rows. Default: no
-
-  --allow-duplicates / --no-allow-duplicates
-                                  Remove duplicate tweets by ID. Default: yes
-  --input-tweet-columns / --no-input-tweet-columns
-                                  Use a default list of tweet column names in
-                                  the input. Only modify this if you have
-                                  processed the json yourself. Default: yes
-
-  --input-users-columns / --no-input-users-columns
-                                  Use a default list of user column names in
-                                  the input. Only modify this if you have a
-                                  dataset of users as opposed to tweets.
+                                  rows. Default: no.
+  --merge-retweets / --no-merge-retweets
+                                  Merge original tweet metadata into retweets.
+                                  The Retweet Text, metrics and entities are
+                                  merged from the original tweet. Default:
+                                  Yes.
+  --json-encode-all / --no-json-encode-all
+                                  JSON encode / escape all fields. Default: no
+  --json-encode-text / --no-json-encode-text
+                                  Apply JSON encode / escape to text fields.
                                   Default: no
-
+  --json-encode-lists / --no-json-encode-lists
+                                  JSON encode / escape lists. Default: yes
+  --allow-duplicates              List every tweets as is, including
+                                  duplicates. Default: No, only unique tweets
+                                  per row. Retweets are not duplicates.
   --extra-input-columns TEXT      Manually specify extra input columns. Comma
-                                  separated string. Default is blank, no extra
-                                  input columns.
-
+                                  separated string. Only modify this if you
+                                  have processed the json yourself. Default
+                                  output is all available object columns, no
+                                  extra input columns.
   --output-columns TEXT           Specify what columns to output in the CSV.
                                   Default is all input columns.
-
   --batch-size INTEGER            How many lines to process per chunk. Default
                                   is 100. Reduce this if output is slow.
-
-  --show-stats / --no-show-stats  Show stats about the dataset on completion.
-                                  Default is show. Always hidden if you're
-                                  using stdin / stdout pipes.
-
+  --hide-stats                    Hide stats about the dataset on completion.
+                                  Always hidden if you're using stdin / stdout
+                                  pipes.
+  --hide-progress                 Hide the Progress bar. Always hidden if
+                                  you're using stdin / stdout pipes.
   --help                          Show this message and exit.
 ```
 
