@@ -284,13 +284,19 @@ class DataFrameConverter:
             # If it's a native retweet, replace the "RT @user Text" with the original text, metrics, and entities, but keep the Author.
             if retweeted_tweet and self.merge_retweets:
                 # A retweet inherits everything from retweeted tweet.
-                tweet["text"] = retweeted_tweet.pop("text", None)
-                tweet["entities"] = retweeted_tweet.pop("entities", None)
-                tweet["attachments"] = retweeted_tweet.pop("attachments", None)
-                tweet["context_annotations"] = retweeted_tweet.pop(
-                    "context_annotations", None
+                tweet["text"] = retweeted_tweet.pop("text", tweet.pop("text", None))
+                tweet["entities"] = retweeted_tweet.pop(
+                    "entities", tweet.pop("entities", None)
                 )
-                tweet["public_metrics"] = retweeted_tweet.pop("public_metrics", None)
+                tweet["attachments"] = retweeted_tweet.pop(
+                    "attachments", tweet.pop("attachments", None)
+                )
+                tweet["context_annotations"] = retweeted_tweet.pop(
+                    "context_annotations", tweet.pop("context_annotations", None)
+                )
+                tweet["public_metrics"] = retweeted_tweet.pop(
+                    "public_metrics", tweet.pop("public_metrics", None)
+                )
 
             # reconstruct referenced_tweets object
             referenced_tweets = [
