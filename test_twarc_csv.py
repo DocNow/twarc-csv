@@ -91,3 +91,6 @@ def test_compliance_tweets():
 
 def test_counts():
     _process_file("counts", 169, extra=" --input-data-type counts")
+
+def test_lists():
+    _process_file("lists", 6, extra=" --input-data-type lists")

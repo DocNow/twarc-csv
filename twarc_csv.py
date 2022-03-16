@@ -18,9 +18,9 @@ DataFrameConverter = dataframe_converter.DataFrameConverter
     "--input-data-type",
     required=False,
     default="tweets",
-    help='Input data type - you can turn "tweets", "users", "counts" or "compliance" data into CSV.',
+    help='Input data type - you can turn "tweets", "users", "counts" or "compliance" or "lists" data into CSV.',
     type=click.Choice(
-        ["tweets", "users", "counts", "compliance"], case_sensitive=False
+        ["tweets", "users", "counts", "compliance", "lists"], case_sensitive=False
     ),
 )
 @click.option(

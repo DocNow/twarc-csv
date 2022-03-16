@@ -136,6 +136,22 @@ __twarc.version
     "\n"
 )
 
+DEFAULT_LISTS_COLUMNS = """
+id
+owner_id
+created_at
+name
+description
+member_count
+follower_count
+private
+__twarc.retrieved_at
+__twarc.url
+__twarc.version
+""".split(
+    "\n"
+)
+
 
 class DataFrameConverter:
     """
@@ -188,6 +204,10 @@ class DataFrameConverter:
         if input_data_type == "counts":
             self.columns.extend(
                 x for x in DEFAULT_COUNTS_COLUMNS if x not in self.columns
+            )
+        if input_data_type == "lists":
+            self.columns.extend(
+                x for x in DEFAULT_LISTS_COLUMNS if x not in self.columns
             )
         if extra_input_columns:
             self.columns.extend(
