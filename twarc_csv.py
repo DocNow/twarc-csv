@@ -2,7 +2,6 @@ import os
 import click
 import dataframe_converter
 import csv_writer
-
 import logging
 
 log = logging.getLogger("twarc")
@@ -11,12 +10,40 @@ CSVConverter = csv_writer.CSVConverter
 DataFrameConverter = dataframe_converter.DataFrameConverter
 
 
+def _validate_output_columns(context, parameter, value):
+    """
+    Validate specified output columns
+    """
+
+    input_data_type = (
+        "input_data_type" in context.params and context.params["input_data_type"]
+    )
+
+    if value:
+        values = value.split(",")
+        valid = {
+            "tweets": dataframe_converter.DEFAULT_TWEET_COLUMNS,
+            "users": dataframe_converter.DEFAULT_USER_COLUMNS,
+            "counts": dataframe_converter.DEFAULT_COUNTS_COLUMNS,
+            "compliance": dataframe_converter.DEFAULT_COMPLIANCE_COLUMNS,
+            "lists": dataframe_converter.DEFAULT_LISTS_COLUMNS,
+        }
+        for v in values:
+            if v not in valid[input_data_type]:
+                raise click.BadOptionUsage(
+                    parameter.name,
+                    f'"{v}" is not a valid entry for --{parameter.name}. Must be a comma separated string, without spaces, valid entries: {",".join(valid[input_data_type])}',
+                )
+        return ",".join(values)
+
+
 @click.command()
 @click.argument("infile", type=click.File("r", encoding="utf8"), default="-")
 @click.argument("outfile", type=click.File("w", encoding="utf8"), default="-")
 @click.option(
     "--input-data-type",
     required=False,
+    is_eager=True,
     default="tweets",
     help='Input data type - you can turn "tweets", "users", "counts" or "compliance" or "lists" data into CSV.',
     type=click.Choice(
@@ -62,6 +89,7 @@ DataFrameConverter = dataframe_converter.DataFrameConverter
 @click.option(
     "--output-columns",
     default="",
+    callback=_validate_output_columns,
     help="Specify what columns to output in the CSV. Default is all input columns.",
 )
 @click.option(
