@@ -28,7 +28,7 @@ class CSVConverter:
         self.output_format = output_format
         self.batch_size = batch_size
         self.hide_progress = hide_progress
-        self.progress = FileSizeProgressBar(infile, outfile, disable=hide_progress)
+        self.progress = FileSizeProgressBar(infile, outfile, disable=(hide_progress or not self.infile.seekable()))
 
     def _read_lines(self):
         """
@@ -44,7 +44,7 @@ class CSVConverter:
                 except Exception as ex:
                     self.converter.counts["parse_errors"] += 1
                     log.error(f"Error when trying to parse json: '{line}' {ex}")
-            if not self.hide_progress:
+            if not self.hide_progress and self.infile.seekable():
                 self.progress.update(self.infile.tell() - self.progress.n)
             line = self.infile.readline()
 
