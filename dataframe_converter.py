@@ -15,6 +15,10 @@ conversation_id
 referenced_tweets.replied_to.id
 referenced_tweets.retweeted.id
 referenced_tweets.quoted.id
+edit_history_tweet_ids
+edit_controls.edits_remaining
+edit_controls.editable_until
+edit_controls.is_edit_eligible
 author_id
 in_reply_to_user_id
 retweeted_user_id
@@ -80,6 +84,7 @@ geo.id
 geo.name
 geo.place_id
 geo.place_type
+matching_rules
 __twarc.retrieved_at
 __twarc.url
 __twarc.version
