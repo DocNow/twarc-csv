@@ -99,3 +99,23 @@ def test_lists():
 
 def test_geo():
     _process_file("geo_tweets", 2, extra=" --input-data-type tweets")
+
+
+def test_cotweet():
+    _process_file("cotweet")
+
+
+def test_edited():
+    _process_file("edited")
+
+
+def test_edited_after():
+    _process_file("edited_after")
+
+
+def test_edited_before():
+    _process_file("edited_before")
+
+
+def test_quoted_edit():
+    _process_file("quoted_edit")
