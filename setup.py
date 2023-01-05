@@ -16,7 +16,7 @@ setuptools.setup(
     python_requires=">=3.3",
     install_requires=[
         "twarc>=2.13.0",
-        "pandas>=1.2.5",
+        "pandas>=1.3.5",
         "more-itertools>=8.7.0",
         "tqdm>=4.59.0",
     ],
