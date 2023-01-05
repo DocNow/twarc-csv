@@ -73,6 +73,7 @@ author.public_metrics.following_count
 author.public_metrics.listed_count
 author.public_metrics.tweet_count
 author.verified
+author.verified_type
 author.withheld.scope
 author.withheld.copyright
 author.withheld.country_codes
@@ -115,6 +116,7 @@ public_metrics.listed_count
 public_metrics.tweet_count
 url
 verified
+verified_type
 withheld.scope
 withheld.copyright
 withheld.country_codes
@@ -291,7 +293,11 @@ class DataFrameConverter:
         # URLs:
         if "urls" in entities:
             entities["urls"] = [
-                url["display_url"] if "media_key" in url else url["expanded_url"]
+                url["display_url"]
+                if "media_key" in url
+                else url["expanded_url"]
+                if "expanded_url" in url
+                else url["url"]
                 for url in entities["urls"]
             ]
         return entities
@@ -381,8 +387,6 @@ class DataFrameConverter:
         if self.process_entities and "entities" in tweet:
             tweet["entities"] = self._process_entities(tweet["entities"])
 
-        print(json.dumps(tweet))
-
         # Process Entities in the tweet author for tweet datasets:
         if (
             self.process_entities
@@ -390,12 +394,14 @@ class DataFrameConverter:
             and "entities" in tweet["author"]
         ):
             if "url" in tweet["author"]["entities"]:
-                tweet["author"]["url"] = tweet["author"]["entities"]["url"].pop(
-                    "urls", []
-                )[-1]["expanded_url"]
+                tweet["author"]["url"] = [
+                    url["expanded_url"] if "expanded_url" in url else url["url"]
+                    for url in tweet["author"]["entities"]["url"].pop("urls", [])
+                ][-1]
+
             if "description" in tweet["author"]["entities"]:
-                tweet["author"]["description"] = self._process_entities(
-                    tweet["author"]["description"]
+                tweet["author"]["entities"]["description"] = self._process_entities(
+                    tweet["author"]["entities"]["description"]
                 )
 
         # Process entities for user datasets `tweet` here is a user
@@ -407,7 +413,7 @@ class DataFrameConverter:
             tweet["entities"]["description"] = self._process_entities(
                 tweet["entities"]["description"]
             )
-        #todo: process user urls too
+        # todo: process user urls too
 
         # Remove `type` left over from referenced tweets
         tweet.pop("type", None)
@@ -420,6 +426,9 @@ class DataFrameConverter:
             tweet.pop("public_metrics", None)
         if "pinned_tweet" in tweet and not tweet["pinned_tweet"]:
             tweet.pop("pinned_tweet", None)
+        # For older data, make sure the new impressions are missing, not zero:
+        if "public_metrics" in tweet and "impression_count" not in tweet["public_metrics"]:
+            tweet["public_metrics"]["impression_count"] = None
 
         return tweet
 
