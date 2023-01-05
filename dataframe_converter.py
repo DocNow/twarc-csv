@@ -381,6 +381,7 @@ class DataFrameConverter:
         if self.process_entities and "entities" in tweet:
             tweet["entities"] = self._process_entities(tweet["entities"])
 
+        print(json.dumps(tweet))
 
         # Process Entities in the tweet author for tweet datasets:
         if (
@@ -388,7 +389,7 @@ class DataFrameConverter:
             and "author" in tweet
             and "entities" in tweet["author"]
         ):
-            if "url" in tweet["author"]:
+            if "url" in tweet["author"]["entities"]:
                 tweet["author"]["url"] = tweet["author"]["entities"]["url"].pop(
                     "urls", []
                 )[-1]["expanded_url"]
@@ -406,6 +407,7 @@ class DataFrameConverter:
             tweet["entities"]["description"] = self._process_entities(
                 tweet["entities"]["description"]
             )
+        #todo: process user urls too
 
         # Remove `type` left over from referenced tweets
         tweet.pop("type", None)
