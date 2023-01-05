@@ -15,14 +15,13 @@ conversation_id
 referenced_tweets.replied_to.id
 referenced_tweets.retweeted.id
 referenced_tweets.quoted.id
-edit_history_tweet_ids
-edit_controls.edits_remaining
-edit_controls.editable_until
-edit_controls.is_edit_eligible
 author_id
 in_reply_to_user_id
+in_reply_to_username
 retweeted_user_id
+retweeted_username
 quoted_user_id
+quoted_username
 created_at
 text
 lang
@@ -32,6 +31,10 @@ public_metrics.quote_count
 public_metrics.reply_count
 public_metrics.retweet_count
 reply_settings
+edit_history_tweet_ids
+edit_controls.edits_remaining
+edit_controls.editable_until
+edit_controls.is_edit_eligible
 possibly_sensitive
 withheld.scope
 withheld.copyright
@@ -282,7 +285,6 @@ class DataFrameConverter:
         tweet.pop("in_reply_to_user", None)
 
         if "referenced_tweets" in tweet:
-
             # Count Replies:
             replies = [
                 t for t in tweet["referenced_tweets"] if t["type"] == "replied_to"
@@ -290,6 +292,8 @@ class DataFrameConverter:
             reply_tweet = replies[-1] if replies else None
             if "in_reply_to_user_id" in tweet or reply_tweet:
                 self.counts["replies"] += 1
+            if reply_tweet and "author" in reply_tweet:
+                tweet["in_reply_to_username"] = reply_tweet["author"]["username"]
 
             # Extract Retweet only
             rts = [t for t in tweet["referenced_tweets"] if t["type"] == "retweeted"]
@@ -297,6 +301,8 @@ class DataFrameConverter:
             if retweeted_tweet and "author_id" in retweeted_tweet:
                 self.counts["retweets"] += 1
                 tweet["retweeted_user_id"] = retweeted_tweet["author_id"]
+            if retweeted_tweet and "author_id" in retweeted_tweet:
+                tweet["retweeted_username"] = retweeted_tweet["author"]["username"]
 
             # Extract Quoted tweet
             qts = [t for t in tweet["referenced_tweets"] if t["type"] == "quoted"]
@@ -304,6 +310,8 @@ class DataFrameConverter:
             if quoted_tweet and "author_id" in quoted_tweet:
                 self.counts["quotes"] += 1
                 tweet["quoted_user_id"] = quoted_tweet["author_id"]
+            if quoted_tweet and "author" in quoted_tweet:
+                tweet["quoted_username"] = quoted_tweet["author"]["username"]
 
             # Process Retweets:
             # If it's a native retweet, replace the "RT @user Text" with the original text, metrics, and entities, but keep the Author.
