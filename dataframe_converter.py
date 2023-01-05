@@ -294,7 +294,11 @@ class DataFrameConverter:
             reply_tweet = replies[-1] if replies else None
             if "in_reply_to_user_id" in tweet or reply_tweet:
                 self.counts["replies"] += 1
-            if reply_tweet and "author" in reply_tweet:
+            if (
+                reply_tweet
+                and "author" in reply_tweet
+                and "username" in reply_tweet["author"]
+            ):
                 tweet["in_reply_to_username"] = reply_tweet["author"]["username"]
 
             # Extract Retweet only
@@ -303,7 +307,11 @@ class DataFrameConverter:
             if retweeted_tweet and "author_id" in retweeted_tweet:
                 self.counts["retweets"] += 1
                 tweet["retweeted_user_id"] = retweeted_tweet["author_id"]
-            if retweeted_tweet and "author_id" in retweeted_tweet:
+            if (
+                retweeted_tweet
+                and "author_id" in retweeted_tweet
+                and "username" in retweeted_tweet["author"]
+            ):
                 tweet["retweeted_username"] = retweeted_tweet["author"]["username"]
 
             # Extract Quoted tweet
@@ -312,7 +320,11 @@ class DataFrameConverter:
             if quoted_tweet and "author_id" in quoted_tweet:
                 self.counts["quotes"] += 1
                 tweet["quoted_user_id"] = quoted_tweet["author_id"]
-            if quoted_tweet and "author" in quoted_tweet:
+            if (
+                quoted_tweet
+                and "author" in quoted_tweet
+                and "username" in quoted_tweet["author"]
+            ):
                 tweet["quoted_username"] = quoted_tweet["author"]["username"]
 
             # Process Retweets:
