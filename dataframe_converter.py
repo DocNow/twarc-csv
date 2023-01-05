@@ -63,7 +63,7 @@ author.entities.description.cashtags
 author.entities.description.hashtags
 author.entities.description.mentions
 author.entities.description.urls
-author.entities.url.urls
+author.url
 author.location
 author.pinned_tweet_id
 author.profile_image_url
@@ -72,7 +72,6 @@ author.public_metrics.followers_count
 author.public_metrics.following_count
 author.public_metrics.listed_count
 author.public_metrics.tweet_count
-author.url
 author.verified
 author.withheld.scope
 author.withheld.copyright
@@ -275,6 +274,28 @@ class DataFrameConverter:
                     self.counts["unavailable"] += 1
         yield self._format_tweet(tweet)
 
+    def _process_entities(self, entities):
+        # Process Entities in the tweet (or user):
+        if "cashtags" in entities:
+            entities["cashtags"] = [
+                "$" + hashtag["tag"] for hashtag in entities["cashtags"]
+            ]
+        if "hashtags" in entities:
+            entities["hashtags"] = [
+                "#" + hashtag["tag"] for hashtag in entities["hashtags"]
+            ]
+        if "mentions" in entities:
+            entities["mentions"] = [
+                "@" + mention["username"] for mention in entities["mentions"]
+            ]
+        # URLs:
+        if "urls" in entities:
+            entities["urls"] = [
+                url["display_url"] if "media_key" in url else url["expanded_url"]
+                for url in entities["urls"]
+            ]
+        return entities
+
     def _format_tweet(self, tweet):
         """
         Make the tweet objects easier to deal with, removing extra info and changing the structure.
@@ -355,6 +376,36 @@ class DataFrameConverter:
             tweet["referenced_tweets"] = dict(ChainMap(*referenced_tweets))
         else:
             tweet["referenced_tweets"] = {}
+
+        # Process Entities in the tweet for tweet datasets:
+        if self.process_entities and "entities" in tweet:
+            tweet["entities"] = self._process_entities(tweet["entities"])
+
+
+        # Process Entities in the tweet author for tweet datasets:
+        if (
+            self.process_entities
+            and "author" in tweet
+            and "entities" in tweet["author"]
+        ):
+            if "url" in tweet["author"]:
+                tweet["author"]["url"] = tweet["author"]["entities"]["url"].pop(
+                    "urls", []
+                )[-1]["expanded_url"]
+            if "description" in tweet["author"]["entities"]:
+                tweet["author"]["description"] = self._process_entities(
+                    tweet["author"]["description"]
+                )
+
+        # Process entities for user datasets `tweet` here is a user
+        if (
+            self.process_entities
+            and "entities" in tweet
+            and "description" in tweet["entities"]
+        ):
+            tweet["entities"]["description"] = self._process_entities(
+                tweet["entities"]["description"]
+            )
 
         # Remove `type` left over from referenced tweets
         tweet.pop("type", None)
