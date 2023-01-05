@@ -184,6 +184,7 @@ class DataFrameConverter:
         inline_referenced_tweets=False,
         merge_retweets=True,
         allow_duplicates=False,
+        process_entities=True,
         extra_input_columns="",
         output_columns=None,
         dataset_ids=None,
@@ -194,6 +195,7 @@ class DataFrameConverter:
         self.json_encode_lists = json_encode_lists
         self.inline_referenced_tweets = inline_referenced_tweets
         self.merge_retweets = merge_retweets
+        self.process_entities = process_entities
         self.allow_duplicates = allow_duplicates
         self.input_data_type = input_data_type
         self.columns = list()
