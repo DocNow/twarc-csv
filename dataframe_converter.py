@@ -63,6 +63,7 @@ author.entities.description.cashtags
 author.entities.description.hashtags
 author.entities.description.mentions
 author.entities.description.urls
+author.entities.url.urls
 author.url
 author.location
 author.pinned_tweet_id
@@ -394,10 +395,12 @@ class DataFrameConverter:
             and "entities" in tweet["author"]
         ):
             if "url" in tweet["author"]["entities"]:
-                tweet["author"]["url"] = [
+                urls = [
                     url["expanded_url"] if "expanded_url" in url else url["url"]
                     for url in tweet["author"]["entities"]["url"].pop("urls", [])
-                ][-1]
+                ]
+                tweet["author"]["entities"]["url"]["urls"] = urls
+                tweet["author"]["url"] = urls[-1] # There is only 1 url for the profile.
 
             if "description" in tweet["author"]["entities"]:
                 tweet["author"]["entities"]["description"] = self._process_entities(
