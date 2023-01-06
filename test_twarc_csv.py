@@ -54,7 +54,7 @@ def test_2sets():
 
 
 def test_brexit():
-    _process_file("2sets")
+    _process_file("brexit")
 
 
 def test_kpop():
@@ -119,3 +119,23 @@ def test_edited_before():
 
 def test_quoted_edit():
     _process_file("quoted_edit")
+
+
+def test_cashtags():
+    _process_file("cashtags")
+
+
+def test_media_tweet():
+    _process_file("media_tweet")
+
+
+def test_mentions():
+    _process_file("mentions_tweet")
+
+
+def test_many_urls():
+    _process_file("many_urls")
+
+
+def test_verified_type():
+    _process_file("verified_type")
