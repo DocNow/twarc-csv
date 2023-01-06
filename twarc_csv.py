@@ -61,6 +61,11 @@ def _validate_output_columns(context, parameter, value):
     help="Merge original tweet metadata into retweets. The Retweet Text, metrics and entities are merged from the original tweet. Default: Yes.",
 )
 @click.option(
+    "--process-entities/--no-process-entities",
+    default=True,
+    help="Preprocess entities like URLs, mentions and hashtags, providing expanded urls and lists only instead of full json objects. Default: Yes.",
+)
+@click.option(
     "--json-encode-all/--no-json-encode-all",
     default=False,
     help="JSON encode / escape all fields. Default: no",
@@ -119,6 +124,7 @@ def csv(
     json_encode_lists,
     inline_referenced_tweets,
     merge_retweets,
+    process_entities,
     allow_duplicates,
     extra_input_columns,
     output_columns,
@@ -160,6 +166,7 @@ def csv(
         json_encode_lists=json_encode_lists,
         inline_referenced_tweets=inline_referenced_tweets,
         merge_retweets=merge_retweets,
+        process_entities=process_entities,
         allow_duplicates=allow_duplicates,
         extra_input_columns=extra_input_columns,
         output_columns=output_columns,
@@ -176,7 +183,6 @@ def csv(
     writer.process()
 
     if not hide_stats and outfile.name != "<stdout>":
-
         errors = (
             click.style(
                 f"{converter.counts['parse_errors']} failed to parse. See twarc.log for details.\n",

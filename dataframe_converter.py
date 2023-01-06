@@ -15,23 +15,27 @@ conversation_id
 referenced_tweets.replied_to.id
 referenced_tweets.retweeted.id
 referenced_tweets.quoted.id
-edit_history_tweet_ids
-edit_controls.edits_remaining
-edit_controls.editable_until
-edit_controls.is_edit_eligible
 author_id
 in_reply_to_user_id
+in_reply_to_username
 retweeted_user_id
+retweeted_username
 quoted_user_id
+quoted_username
 created_at
 text
 lang
 source
-public_metrics.like_count
-public_metrics.quote_count
+public_metrics.impression_count
 public_metrics.reply_count
 public_metrics.retweet_count
+public_metrics.quote_count
+public_metrics.like_count
 reply_settings
+edit_history_tweet_ids
+edit_controls.edits_remaining
+edit_controls.editable_until
+edit_controls.is_edit_eligible
 possibly_sensitive
 withheld.scope
 withheld.copyright
@@ -60,6 +64,7 @@ author.entities.description.hashtags
 author.entities.description.mentions
 author.entities.description.urls
 author.entities.url.urls
+author.url
 author.location
 author.pinned_tweet_id
 author.profile_image_url
@@ -68,8 +73,8 @@ author.public_metrics.followers_count
 author.public_metrics.following_count
 author.public_metrics.listed_count
 author.public_metrics.tweet_count
-author.url
 author.verified
+author.verified_type
 author.withheld.scope
 author.withheld.copyright
 author.withheld.country_codes
@@ -87,8 +92,7 @@ geo.place_type
 matching_rules
 __twarc.retrieved_at
 __twarc.url
-__twarc.version
-""".split(
+__twarc.version""".split(
     "\n"
 )
 
@@ -112,13 +116,13 @@ public_metrics.listed_count
 public_metrics.tweet_count
 url
 verified
+verified_type
 withheld.scope
 withheld.copyright
 withheld.country_codes
 __twarc.retrieved_at
 __twarc.url
-__twarc.version
-""".split(
+__twarc.version""".split(
     "\n"
 )
 
@@ -126,8 +130,7 @@ DEFAULT_COMPLIANCE_COLUMNS = """id
 action
 created_at
 redacted_at
-reason
-""".split(
+reason""".split(
     "\n"
 )
 
@@ -136,8 +139,7 @@ end
 tweet_count
 __twarc.retrieved_at
 __twarc.url
-__twarc.version
-""".split(
+__twarc.version""".split(
     "\n"
 )
 
@@ -152,8 +154,7 @@ follower_count
 private
 __twarc.retrieved_at
 __twarc.url
-__twarc.version
-""".split(
+__twarc.version""".split(
     "\n"
 )
 
@@ -181,6 +182,7 @@ class DataFrameConverter:
         inline_referenced_tweets=False,
         merge_retweets=True,
         allow_duplicates=False,
+        process_entities=True,
         extra_input_columns="",
         output_columns=None,
         dataset_ids=None,
@@ -191,6 +193,7 @@ class DataFrameConverter:
         self.json_encode_lists = json_encode_lists
         self.inline_referenced_tweets = inline_referenced_tweets
         self.merge_retweets = merge_retweets
+        self.process_entities = process_entities
         self.allow_duplicates = allow_duplicates
         self.input_data_type = input_data_type
         self.columns = list()
@@ -269,6 +272,32 @@ class DataFrameConverter:
                     self.counts["unavailable"] += 1
         yield self._format_tweet(tweet)
 
+    def _process_entities(self, entities):
+        # Process Entities in the tweet (or user):
+        if "cashtags" in entities:
+            entities["cashtags"] = [
+                "$" + hashtag["tag"] for hashtag in entities["cashtags"]
+            ]
+        if "hashtags" in entities:
+            entities["hashtags"] = [
+                "#" + hashtag["tag"] for hashtag in entities["hashtags"]
+            ]
+        if "mentions" in entities:
+            entities["mentions"] = [
+                "@" + mention["username"] for mention in entities["mentions"]
+            ]
+        # URLs:
+        if "urls" in entities:
+            entities["urls"] = [
+                url["display_url"]
+                if "media_key" in url
+                else url["expanded_url"]
+                if "expanded_url" in url
+                else url["url"]
+                for url in entities["urls"]
+            ]
+        return entities
+
     def _format_tweet(self, tweet):
         """
         Make the tweet objects easier to deal with, removing extra info and changing the structure.
@@ -282,7 +311,6 @@ class DataFrameConverter:
         tweet.pop("in_reply_to_user", None)
 
         if "referenced_tweets" in tweet:
-
             # Count Replies:
             replies = [
                 t for t in tweet["referenced_tweets"] if t["type"] == "replied_to"
@@ -290,6 +318,12 @@ class DataFrameConverter:
             reply_tweet = replies[-1] if replies else None
             if "in_reply_to_user_id" in tweet or reply_tweet:
                 self.counts["replies"] += 1
+            if (
+                reply_tweet
+                and "author" in reply_tweet
+                and "username" in reply_tweet["author"]
+            ):
+                tweet["in_reply_to_username"] = reply_tweet["author"]["username"]
 
             # Extract Retweet only
             rts = [t for t in tweet["referenced_tweets"] if t["type"] == "retweeted"]
@@ -297,6 +331,12 @@ class DataFrameConverter:
             if retweeted_tweet and "author_id" in retweeted_tweet:
                 self.counts["retweets"] += 1
                 tweet["retweeted_user_id"] = retweeted_tweet["author_id"]
+            if (
+                retweeted_tweet
+                and "author_id" in retweeted_tweet
+                and "username" in retweeted_tweet["author"]
+            ):
+                tweet["retweeted_username"] = retweeted_tweet["author"]["username"]
 
             # Extract Quoted tweet
             qts = [t for t in tweet["referenced_tweets"] if t["type"] == "quoted"]
@@ -304,6 +344,12 @@ class DataFrameConverter:
             if quoted_tweet and "author_id" in quoted_tweet:
                 self.counts["quotes"] += 1
                 tweet["quoted_user_id"] = quoted_tweet["author_id"]
+            if (
+                quoted_tweet
+                and "author" in quoted_tweet
+                and "username" in quoted_tweet["author"]
+            ):
+                tweet["quoted_username"] = quoted_tweet["author"]["username"]
 
             # Process Retweets:
             # If it's a native retweet, replace the "RT @user Text" with the original text, metrics, and entities, but keep the Author.
@@ -332,6 +378,57 @@ class DataFrameConverter:
             tweet["referenced_tweets"] = dict(ChainMap(*referenced_tweets))
         else:
             tweet["referenced_tweets"] = {}
+
+        # Process entities in the tweets:
+        if self.process_entities and "entities" in tweet:
+            tweet["entities"] = self._process_entities(tweet["entities"])
+
+        # Process entities in the tweet authors of tweets:
+        if (
+            self.process_entities
+            and "author" in tweet
+            and "entities" in tweet["author"]
+        ):
+            if "url" in tweet["author"]["entities"]:
+                urls = [
+                    url["expanded_url"] if "expanded_url" in url else url["url"]
+                    for url in tweet["author"]["entities"]["url"].pop("urls", [])
+                ]
+                tweet["author"]["entities"]["url"]["urls"] = urls
+                # There is only 1 url for the profile.
+                tweet["author"]["url"] = urls[-1]
+
+            if "description" in tweet["author"]["entities"]:
+                tweet["author"]["entities"]["description"] = self._process_entities(
+                    tweet["author"]["entities"]["description"]
+                )
+
+        # For older tweet data, make sure the new impressions are missing, not zero:
+        if (
+            self.input_data_type == "tweets"
+            and "public_metrics" in tweet
+            and "impression_count" not in tweet["public_metrics"]
+        ):
+            tweet["public_metrics"]["impression_count"] = None
+
+        # Process entities for users: `tweet` here is a user
+        if self.input_data_type == "users":
+            # Make sure pinned_tweet_id is missing, not zero:
+            tweet["pinned_tweet_id"] = (
+                tweet["pinned_tweet_id"] if "pinned_tweet_id" in tweet else None
+            )
+            # Process entities
+            if self.process_entities and "entities" in tweet:
+                if "description" in tweet["entities"]:
+                    tweet["entities"]["description"] = self._process_entities(
+                        tweet["entities"]["description"]
+                    )
+                if "url" in tweet["entities"]:
+                    tweet["entities"]["url"] = self._process_entities(
+                        tweet["entities"]["url"]
+                    )
+                    # User url:
+                    tweet["url"] = tweet["entities"]["url"]["urls"][-1]
 
         # Remove `type` left over from referenced tweets
         tweet.pop("type", None)
@@ -419,13 +516,13 @@ class DataFrameConverter:
                     f"💔 ERROR: {len(diff)} Unexpected items in data! \n"
                     "Are you sure you specified the correct --input-data-type?\n"
                     "If the object type is correct, add extra columns with:"
-                    f"\n--extra-input-columns \"{','.join(diff)}\"\nSkipping entire batch of {len(_df)} tweets!",
+                    f"\n--extra-input-columns \"{','.join(diff)}\"\nSkipping entire batch of {len(_df)} {self.input_data_type}!",
                     fg="red",
                 ),
                 err=True,
             )
             log.error(
-                f"CSV Unexpected Data: \"{','.join(diff)}\". Expected {len(self.columns)} columns, got {len(_df.columns)}. Skipping entire batch of {len(_df)} tweets!"
+                f"CSV Unexpected Data: \"{','.join(diff)}\". Expected {len(self.columns)} columns, got {len(_df.columns)}. Skipping entire batch of {len(_df)} {self.input_data_type}!"
             )
             self.counts["parse_errors"] += len(_df)
             return pd.DataFrame(columns=self.columns)

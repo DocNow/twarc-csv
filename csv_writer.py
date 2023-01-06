@@ -28,7 +28,9 @@ class CSVConverter:
         self.output_format = output_format
         self.batch_size = batch_size
         self.hide_progress = hide_progress
-        self.progress = FileSizeProgressBar(infile, outfile, disable=(hide_progress or not self.infile.seekable()))
+        self.progress = FileSizeProgressBar(
+            infile, outfile, disable=(hide_progress or not self.infile.seekable())
+        )
 
     def _read_lines(self):
         """
