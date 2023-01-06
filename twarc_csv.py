@@ -183,7 +183,6 @@ def csv(
     writer.process()
 
     if not hide_stats and outfile.name != "<stdout>":
-
         errors = (
             click.style(
                 f"{converter.counts['parse_errors']} failed to parse. See twarc.log for details.\n",

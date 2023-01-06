@@ -9,7 +9,7 @@ setuptools.setup(
     url="https://github.com/docnow/twarc-csv",
     author="Igor Brigadir",
     author_email="igor.brigadir@gmail.com",
-    py_modules=["twarc_csv","csv_writer","dataframe_converter"],
+    py_modules=["twarc_csv", "csv_writer", "dataframe_converter"],
     description="A twarc plugin to output Twitter data as CSV",
     long_description=long_description,
     long_description_content_type="text/markdown",
