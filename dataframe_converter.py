@@ -380,7 +380,7 @@ class DataFrameConverter:
             tweet["referenced_tweets"] = {}
 
         # Process entities in the tweets:
-        if self.process_entities and "entities" in tweet:
+        if self.process_entities and "entities" in tweet and tweet["entities"]:
             tweet["entities"] = self._process_entities(tweet["entities"])
 
         # Process entities in the tweet authors of tweets:
@@ -388,6 +388,7 @@ class DataFrameConverter:
             self.process_entities
             and "author" in tweet
             and "entities" in tweet["author"]
+            and tweet["author"]["entities"]
         ):
             if "url" in tweet["author"]["entities"]:
                 urls = [
@@ -418,7 +419,7 @@ class DataFrameConverter:
                 tweet["pinned_tweet_id"] if "pinned_tweet_id" in tweet else None
             )
             # Process entities
-            if self.process_entities and "entities" in tweet:
+            if self.process_entities and "entities" in tweet and tweet["entities"]:
                 if "description" in tweet["entities"]:
                     tweet["entities"]["description"] = self._process_entities(
                         tweet["entities"]["description"]
