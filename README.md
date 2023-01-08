@@ -39,10 +39,10 @@ Usage: twarc2 csv [OPTIONS] [INFILE] [OUTFILE]
   Convert tweets to CSV.
 
 Options:
-  --input-data-type [tweets|users|counts|compliance]
+  --input-data-type [tweets|users|counts|compliance|lists]
                                   Input data type - you can turn "tweets",
-                                  "users", "counts" or "compliance" data into
-                                  CSV.
+                                  "users", "counts" or "compliance" or "lists"
+                                  data into CSV.
   --inline-referenced-tweets / --no-inline-referenced-tweets
                                   Output referenced tweets inline as separate
                                   rows. Default: no.
@@ -50,6 +50,11 @@ Options:
                                   Merge original tweet metadata into retweets.
                                   The Retweet Text, metrics and entities are
                                   merged from the original tweet. Default:
+                                  Yes.
+  --process-entities / --no-process-entities
+                                  Preprocess entities like URLs, mentions and
+                                  hashtags, providing expanded urls and lists
+                                  only instead of full json objects. Default:
                                   Yes.
   --json-encode-all / --no-json-encode-all
                                   JSON encode / escape all fields. Default: no

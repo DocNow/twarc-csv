@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setuptools.setup(
     name="twarc-csv",
-    version="0.7.0",
+    version="0.7.1",
     url="https://github.com/docnow/twarc-csv",
     author="Igor Brigadir",
     author_email="igor.brigadir@gmail.com",

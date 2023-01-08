@@ -139,3 +139,7 @@ def test_many_urls():
 
 def test_verified_type():
     _process_file("verified_type")
+
+
+def test_missing_entities():
+    _process_file("entities_test")
